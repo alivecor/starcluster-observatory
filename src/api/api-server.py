@@ -47,7 +47,7 @@ def qhost():
             'status': 'error',
             'error': 'An error occurred while running qhost'
         })
-    return result
+    return jsonify(result)
 
 
 @app.route('/qstat')
@@ -59,7 +59,7 @@ def qstat():
             'status': 'error',
             'error': 'An error occurred while running qstat'
         })
-    return result
+    return jsonify(result)
 
 
 @app.route('/nodes/add')
