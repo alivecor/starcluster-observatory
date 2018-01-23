@@ -21,7 +21,7 @@ def get_status(cluster_name, config_path=None):
     """Get uptime and node list from cluster."""
     command = _starcluster_command() + ' listclusters ' + _filter_cluster_name(cluster_name)
     result = subprocess.check_output([command], shell=True)
-    lines = result.split('\n')
+    lines = result.decode('utf8').split('\n')
     uptime_line = next((l for l in lines if 'Uptime' in l), None)
     node_lines = [l for l in lines if 'compute.amazonaws.com' in l]
     uptime = uptime_line.split(',')[1].strip()
