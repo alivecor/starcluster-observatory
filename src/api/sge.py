@@ -5,6 +5,7 @@ import xml.etree.ElementTree
 
 QSTAT_PATH = '/opt/sge6/bin/linux-x64/qstat'
 QHOST_PATH = '/opt/sge6/bin/linux-x64/qhost'
+QDEL_PATH = '/opt/sge6/bin/linux-x64/qdel'
 
 
 ENV = dict(os.environ)
@@ -48,6 +49,12 @@ def qstat():
     queued_jobs = [_parse_job_list(job_list) for job_list in queue_info_element]
     pending_jobs = [_parse_job_list(job_list) for job_list in job_info_element]
     return queued_jobs, pending_jobs
+
+
+def qdel(jid):
+    """Cancel a running job."""
+    command = '%s -j %d' % (QDEL_PATH, jid)
+    subprocess.check_output([command], env=ENV, shell=True)
 
 
 def qstat_job_details(jid):

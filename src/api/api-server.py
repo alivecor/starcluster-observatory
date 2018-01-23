@@ -3,17 +3,19 @@ import argparse
 from flask import Flask
 from flask import jsonify
 from flask import request
-import os
-import re
 import schedule
+import subprocess
 from threading import Thread
 import time
+
+import sge
+import starcluster
 
 
 parser = argparse.ArgumentParser(description='Run a server which exposes the starcluster and qstat APIs.', allow_abbrev=True)
 parser.add_argument('--host_ip', default='0.0.0.0', type=str, help='IP address of interface to listen on.')
 parser.add_argument('--port', default=6360, type=int, help='Port to listen on.')
-parser.add_argument('--cluster', default='dev', type=int, help='Name of the cluster to manage.')
+parser.add_argument('--cluster_name', default='dev', type=int, help='Name of the cluster to manage.')
 parser.add_argument('--starcluster_config', default='/etc/starcluster/config', type=int, help='Path to starcluster config file.')
 parser.add_argument('--idle_timeout', default=30, type=int, help='Shut down nodes if idle longer than this many minutes.')
 
@@ -22,38 +24,14 @@ args = parser.parse_args()
 
 app = Flask(__name__)
 
-HOST_IP = args.host_ip
-PORT = args.port
-CLUSTER_NAME = args.cluster
-
-STARCLUSTER_PATH = '/usr/local/bin/starcluster'
 
 
-# Check queue status
-
-def get_cluster_status(cluster_name):
-    """Get uptime and  node list from cluster."""
-    command = '%s listclusters %s' % (STARCLUSTER_PATH, cluster_name)
+@app.route('/status')
+def cluster_status():
     try:
-        result = subprocess.check_output([command], env=ENV, shell=True)
+        uptime, nodes = starcluster.get_cluster_status(args.cluster_name)
     except subprocess.CalledProcessError as e:
         return jsonify({'status': 'error', 'error': 'An error occurred while running starcluster listclusters'})
-    lines = result.split('\n')
-    uptime_line = next((l for l in lines if 'Uptime' in l), None)
-    node_lines = [l for l in lines if 'compute.amazonaws.com' in l]
-    uptime = uptime_line.split(',')[1].strip()
-    nodes = [line.lstrip().split(' ')[0] for line in node_lines]
-    return uptime, nodes
-
-
-def filter_cluster_name(cluster_name):
-    """Filter cluster_name argument, only allow alphanumerics and .-_"""
-    return re.sub('(?!-)\W', '', cluster_name)
-
-
-@app.route('/status/<cluster_name>')
-def cluster_status(cluster_name):
-    uptime, nodes = get_cluster_status(filter_cluster_name(cluster_name))
     return jsonify({
         'status': 'ok',
         'uptime': uptime,
@@ -61,26 +39,10 @@ def cluster_status(cluster_name):
     })
 
 
-@app.route('/restart/<cluster_name>')
-def cluster_restart(cluster_name):
-    command = '%s restart %s' % (STARCLUSTER_PATH, filter_cluster_name(cluster_name))
+@app.route('/qhost')
+def qhost():
     try:
-        result = subprocess.check_output([command], env=ENV, shell=True)
-    except subprocess.CalledProcessError as e:
-        return jsonify({
-            'status': 'error',
-            'error': 'An error occurred while running starcluster restart'
-        })
-    return jsonify({
-        'status': 'ok'
-    })
-
-
-@app.route('/qhost/<cluster_name>')
-def cluster_qhost(cluster_name):
-    command = '%s sshmaster %s "qhost"' % (STARCLUSTER_PATH, filter_cluster_name(cluster_name))
-    try:
-        result = subprocess.check_output([command], env=ENV, shell=True)
+        result = sge.qhost()
     except subprocess.CalledProcessError as e:
         return jsonify({
             'status': 'error',
@@ -89,11 +51,10 @@ def cluster_qhost(cluster_name):
     return result
 
 
-@app.route('/qstat/<cluster_name>')
-def cluster_qstat(cluster_name):
-    command = '%s sshmaster %s "qstat"' % (STARCLUSTER_PATH, filter_cluster_name(cluster_name))
+@app.route('/qstat')
+def qstat():
     try:
-        result = subprocess.check_output([command], env=ENV, shell=True)
+        result = sge.qstat()
     except subprocess.CalledProcessError as e:
         return jsonify({
             'status': 'error',
@@ -102,44 +63,32 @@ def cluster_qstat(cluster_name):
     return result
 
 
-@app.route('/resize/<cluster_name>')
-def cluster_resize(cluster_name):
-    cluster_name = filter_cluster_name(cluster_name)
-    requested_size = int(request.args.get('n'))
-    if requested_size < 1 or requested_size > 10:
+@app.route('/nodes/add')
+def cluster_add_node():
+    instance_type = request.args.get('instance_type')
+    try:
+         starcluster.add_node(args.cluster_name, instance_type=instance_type)
+    except subprocess.CalledProcessError as e:
         return jsonify({
             'status': 'error',
-            'error': 'requested size %d not allowed' % requested_size
+            'error': 'An error occurred while running starcluster addnode'
         })
-    _, nodes = get_cluster_status(cluster_name)
-    running_size = len(nodes)
-
-    if requested_size > running_size:
-        # Grow the cluster
-        add_size = requested_size - running_size
-        command = '%s addnode -n %d -b 2.2 %s' % (STARCLUSTER_PATH, add_size, cluster_name)
-        try:
-            result = subprocess.check_output([command], env=ENV, shell=True)
-        except subprocess.CalledProcessError as e:
-            return jsonify({
-                'status': 'error',
-                'error': 'An error occurred while running starcluster addnode'
-            })
-    if requested_size < running_size:
-        remove_size = running_size - requested_size
-        remove_nodes = nodes[-remove_size:]  # Always remove the last nodes added.
-        command = '%s removenode -c --force %s %s' % (STARCLUSTER_PATH, cluster_name, ' '.join(remove_nodes))
-        try:
-            result = subprocess.check_output([command], env=ENV, shell=True)
-        except subprocess.CalledProcessError as e:
-            return jsonify({
-            'status': 'error',
-            'error': 'An error occurred while running starcluster removenode'
-            })
     return jsonify({
         'status': 'ok',
-        'old_size': running_size,
-        'new_size': requested_size
+    })
+
+
+@app.route('/nodes/<node_alias>/remove')
+def cluster_remove_node(node_alias):
+    try:
+        starcluster.remove_node(args.cluster_name, node_alias)
+    except subprocess.CalledProcessError as e:
+        return jsonify({
+        'status': 'error',
+        'error': 'An error occurred while running starcluster removenode'
+    })
+    return jsonify({
+        'status': 'ok',
     })
 
 
@@ -150,13 +99,40 @@ def run_schedule():
         time.sleep(1)
 
 
-idle_nodes = {}  # Maps node name to first time node was detected idle.
+_idle_hosts = {}  # Maps host name to first time (seconds) host was detected idle.
 def check_idle():
-
+    time_now = time.time()
+    print('Checking for idle hosts at time %.1f.' % time_now)
+    # First, check to see if any hosts are idle.
+    hosts = sge.qhost()
+    host_names = set([h['name'] for h in hosts if h['name'] != 'global'])
+    queued_jobs, _ = sge.qstat()
+    # Hosts with no jobs scheduled on them
+    busy_hosts = set([j['queue_name'].split('@')[1] for j in queued_jobs])
+    # Remove hosts with jobs from idle list
+    for busy_host in busy_hosts:
+        if busy_host in _idle_hosts:
+            del _idle_hosts[busy_host]
+    # Add hosts with no jobs to idle list
+    idle_hosts = host_names.difference(busy_hosts)
+    for host in idle_hosts:
+        if host not in _idle_hosts:
+            _idle_hosts[host] = time_now
+    # Check if any hosts have been idle longer than idle_timeout
+    hosts_to_remove = []
+    for host, start_time in _idle_hosts.copy().items():
+        if time_now - start_time > (args.idle_timeout * 60):
+            hosts_to_remove.append(host)
+            del _idle_hosts[host]
+    for host in hosts_to_remove:
+        try:
+            starcluster.remove_node(args.cluster_name, host)
+        except subprocess.CalledProcessError as e:
+            print('Error auto-removing idle host %s: %s' % (host, str(e)))
 
 
 if __name__ == '__main__':
-    schedule.every(60).seconds.do(run_every_10_seconds)
+    schedule.every(60).seconds.do(check_idle)
     t = Thread(target=run_schedule)
     t.start()
-    app.run(host=HOST_IP, port=PORT)
+    app.run(host=args.host_ip, port=args.port)
