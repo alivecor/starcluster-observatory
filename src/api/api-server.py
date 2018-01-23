@@ -28,7 +28,7 @@ app = Flask(__name__)
 @app.route('/status')
 def cluster_status():
     try:
-        uptime, nodes = starcluster.get_cluster_status(args.cluster_name)
+        uptime, nodes = starcluster.get_status(args.cluster_name)
     except subprocess.CalledProcessError as e:
         return jsonify({'status': 'error', 'error': 'An error occurred while running starcluster listclusters'})
     return jsonify({
