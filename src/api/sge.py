@@ -100,6 +100,8 @@ def qhost():
     hosts_element = xml.etree.ElementTree.fromstring(result_xml)
     hosts = []
     for host_element in hosts_element:
+        if host_element.get('name') == 'global':
+            continue
         host = {
             'name': host_element.get('name')
         }

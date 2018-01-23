@@ -104,7 +104,7 @@ def check_idle():
     print('Checking for idle hosts at time %.1f.' % time_now)
     # First, check to see if any hosts are idle.
     hosts = sge.qhost()
-    host_names = set([h['name'] for h in hosts if h['name'] != 'global'])
+    host_names = set([h['name'] for h in hosts if not 'master' in ['name']])
     queued_jobs, _ = sge.qstat()
     # Hosts with no jobs scheduled on them
     busy_hosts = set([j['queue_name'].split('@')[1] for j in queued_jobs])
