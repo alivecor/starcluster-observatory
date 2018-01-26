@@ -58,6 +58,6 @@ def cancel_job():
 
 if __name__ == '__main__':
     app.run(
-        host=HOST_IP,
-        port=PORT
+        host=args.host_ip,
+        port=args.port
     )
