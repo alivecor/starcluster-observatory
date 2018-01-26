@@ -27,19 +27,17 @@ def static_url(path):
 @app.route('/')
 def homepage():
     # Get cluster status
-    return render_template('layout.html', static_url=static_url)
+    return render_template('nodes.html', static_url=static_url)
 
 
-@app.route('/jobs_tab')
+@app.route('/jobs_tab.html')
 def jobs_tab():
-    # Render jobs tab HTML
-    return 'Jobs'
+    return render_template('jobs.html', static_url=static_url)
 
 
-@app.route('/nodes_tab')
+@app.route('/nodes_tab.html')
 def nodes_tab():
-    # Render nodes tab HTML
-    return 'Nodes'
+    return render_template('nodes.html', static_url=static_url)
 
 
 @app.route('/add_node')
