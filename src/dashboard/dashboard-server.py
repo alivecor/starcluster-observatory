@@ -17,13 +17,17 @@ parser.add_argument('--api_server_port', default=6361, type=int, help='Port to u
 args = parser.parse_args()
 
 
-app = Flask(__name__, static_url_path='/observatory/static')
+app = Flask(__name__)
+
+
+def static_url(path):
+    return os.path.join('/observatory/static/', path)
 
 
 @app.route('/')
 def homepage():
     # Get cluster status
-    return render_template('layout.html')
+    return render_template('layout.html', static_url=static_url)
 
 
 @app.route('/jobs_tab')
