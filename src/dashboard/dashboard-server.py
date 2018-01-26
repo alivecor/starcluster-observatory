@@ -17,7 +17,7 @@ parser.add_argument('--api_server_port', default=6361, type=int, help='Port to u
 args = parser.parse_args()
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/observatory/static')
 
 
 @app.route('/')
