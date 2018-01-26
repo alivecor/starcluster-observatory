@@ -23,7 +23,7 @@ app = Flask(__name__)
 @app.route('/')
 def homepage():
     # Get cluster status
-    return 'Hello World'
+    return render_template('layout.html')
 
 
 @app.route('/jobs_tab')
@@ -51,7 +51,7 @@ def remove_node():
 
 
 @app.route('/cancel_job')
-def remove_node():
+def cancel_job():
     # Cancel the specified job
     return ''
 
@@ -61,5 +61,3 @@ if __name__ == '__main__':
         host=HOST_IP,
         port=PORT
     )
-
-
