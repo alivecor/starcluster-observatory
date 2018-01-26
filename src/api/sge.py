@@ -41,7 +41,7 @@ def _parse_job_list(job_list_element):
 
 
 def qstat():
-    command = '%s -xml' % QSTAT_PATH
+    command = '%s -u "*" -xml' % QSTAT_PATH
     result_xml = subprocess.check_output([command], env=ENV, shell=True)
     root_element = xml.etree.ElementTree.fromstring(result_xml)
     queue_info_element = root_element.find('queue_info')  # Queued Jobs

@@ -14,7 +14,7 @@ import starcluster
 
 parser = argparse.ArgumentParser(description='Run a server which exposes the starcluster and qstat APIs.', allow_abbrev=True)
 parser.add_argument('--host_ip', default='0.0.0.0', type=str, help='IP address of interface to listen on.')
-parser.add_argument('--port', default=6360, type=int, help='Port to listen on.')
+parser.add_argument('--port', default=6361, type=int, help='Port to listen on.')
 parser.add_argument('--cluster_name', default='dev', type=str, help='Name of the cluster to manage.')
 parser.add_argument('--starcluster_config', default='/etc/starcluster/config', type=str, help='Path to starcluster config file.')
 parser.add_argument('--idle_timeout', default=30, type=int, help='Shut down nodes if idle longer than this (minutes).')
