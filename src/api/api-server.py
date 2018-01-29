@@ -52,8 +52,12 @@ def qhost():
 
 @app.route('/qstat')
 def qstat():
+    job_id = request.args.get('job_id')
     try:
-        result = sge.qstat()
+        if job_id is None:
+            result = sge.qstat()
+        else:
+            result = qstat_job_details(int(job_id))
     except subprocess.CalledProcessError as e:
         return jsonify({
             'status': 'error',

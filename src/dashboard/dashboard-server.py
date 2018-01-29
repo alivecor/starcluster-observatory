@@ -5,6 +5,7 @@ from flask import render_template
 from flask import request
 import os
 import re
+import requests
 import subprocess
 
 
@@ -32,16 +33,23 @@ def homepage():
 
 @app.route('/jobs_tab.html')
 def jobs_tab():
+    search_query = request.args.get('search')
+    # Get list of jobs
+    # Filter list of jobs
     return render_template('jobs.html', static_url=static_url)
 
 
 @app.route('/nodes_tab.html')
 def nodes_tab():
-    return render_template('nodes.html', static_url=static_url)
+    search_query = request.args.get('search')
+    # Get nodes from backend service
+    result = requests.get('http://%s:%s/qhost' % (args.api_server_host, args.api_server_port))
+    return render_template('nodes.html', static_url=static_url, hosts=result)
 
 
 @app.route('/add_node')
 def add_node():
+    node_type = request.args.get('instance_type')
     # Add a node
     return ''
 
