@@ -45,7 +45,7 @@ def nodes_tab():
     # Get nodes from backend service
     total_cost = '3.04'
     result = requests.get('http://%s:%s/qhost' % (args.api_server_host, args.api_server_port))
-    return render_template('nodes.html', static_url=static_url, hosts=result, total_cost=total_cost)
+    return render_template('nodes.html', static_url=static_url, hosts=result.json(), total_cost=total_cost)
 
 
 @app.route('/add_node')
