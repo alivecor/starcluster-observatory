@@ -55,9 +55,10 @@ def qstat():
     job_id = request.args.get('job_id')
     try:
         if job_id is None:
-            result = sge.qstat()
+            queued, pending = sge.qstat()
+            result = [sge.qstat_job_details(int(job.job.id)) for job in queued + pending]
         else:
-            result = qstat_job_details(int(job_id))
+            result = sge.qstat_job_details(int(job_id))
     except subprocess.CalledProcessError as e:
         return jsonify({
             'status': 'error',
