@@ -35,7 +35,7 @@ def homepage():
 def jobs_tab():
     search_query = request.args.get('search')
     # Get nodes from backend service
-    result = requests.get('http://%s:%s/qhost' % (args.api_server_host, args.api_server_port))
+    result = requests.get('http://%s:%s/qstat' % (args.api_server_host, args.api_server_port))
     jobs = result.json()
     return render_template('jobs.html', static_url=static_url, jobs=jobs)
 
