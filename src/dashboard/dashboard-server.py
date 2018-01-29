@@ -37,10 +37,7 @@ def jobs_tab():
     # Get nodes from backend service
     result = requests.get('http://%s:%s/qstat' % (args.api_server_host, args.api_server_port))
     jobs = result.json()
-    running_jobs = jobs[0]
-    queued_jobs = jobs[1]
-    all_jobs = running_jobs + queued_jobs
-    return render_template('jobs.html', static_url=static_url, jobs=all_jobs)
+    return render_template('jobs.html', static_url=static_url, jobs=jobs)
 
 
 @app.route('/nodes_tab.html')
