@@ -71,8 +71,8 @@ def qstat_job_details(jid):
         'owner': job_info_element.find('JB_owner').text,
         'name': job_info_element.find('JB_job_name').text,
         'executable': job_info_element.find('JB_script_file').text,
-        'stdout_path': _text_or_none(stdout_path_list, 'PN_path'),
-        'stderr_path': _text_or_none(stderr_path_list, 'PN_path'),
+        'stdout_path': _text_or_none(stdout_path_list[0], 'PN_path') if len(stdout_path_list) >= 1 else '',
+        'stderr_path': _text_or_none(stderr_path_list[0], 'PN_path') if len(stderr_path_list) >= 1 else '',
         'priority': job_info_element.find('JB_priority').text,
         'submission_timestamp': job_info_element.find('JB_submission_time').text
     }
