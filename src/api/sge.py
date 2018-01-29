@@ -64,8 +64,8 @@ def qstat_job_details(jid):
     root_element = xml.etree.ElementTree.fromstring(result_xml)
     job_info_element = root_element[0][0]
     job_mail_list = job_info_element.find('JB_mail_list')[0]
-    stdout_path_list = job_info_element.find('JB_stdout_path_list')[0]
-    stderr_path_list = job_info_element.find('JB_stderr_path_list')[0]
+    stdout_path_list = job_info_element.find('JB_stdout_path_list')
+    stderr_path_list = job_info_element.find('JB_stderr_path_list')
     job_details = {
         'job_id': int(job_info_element.find('JB_job_number').text),
         'owner': job_info_element.find('JB_owner').text,
