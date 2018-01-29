@@ -28,7 +28,7 @@ def static_url(path):
 @app.route('/')
 def homepage():
     # Get cluster status
-    return render_template('nodes.html', static_url=static_url)
+    return nodes_tab()
 
 
 @app.route('/jobs_tab.html')
@@ -43,8 +43,9 @@ def jobs_tab():
 def nodes_tab():
     search_query = request.args.get('search')
     # Get nodes from backend service
+    total_cost = '3.04'
     result = requests.get('http://%s:%s/qhost' % (args.api_server_host, args.api_server_port))
-    return render_template('nodes.html', static_url=static_url, hosts=result)
+    return render_template('nodes.html', static_url=static_url, hosts=result, total_cost=total_cost)
 
 
 @app.route('/add_node')

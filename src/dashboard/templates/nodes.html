@@ -44,7 +44,7 @@
             <div class="col-6 col-sm-3 placeholder">
               <img src="data:image/gif;base64,R0lGODlhAQABAIABAADcgwAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
               <h4>Label</h4>
-              <span class="text-muted">$/hr</span>
+              <span class="text-muted">{{ total_cost }}$/hr</span>
             </div>
           </section>
 
@@ -63,10 +63,10 @@
               <tbody>
 {% for host in hosts %}
                 <tr>
-                  <td>host.name</td>
-                  <td>host.state</td>
+                  <td>{{ host.name }}</td>
+                  <td>{{ host.state }}</td>
                   <td></td>
-                  <td>host.load_avg</td>
+                  <td>{{ host.load_avg }}</td>
                   <td></td>
                 </tr>
 {% endfor %}
