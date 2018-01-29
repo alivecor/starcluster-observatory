@@ -55,8 +55,8 @@
                 <tr>
                   <th>Name</th>
                   <th>State</th>
-                  <th>type</th>
                   <th>CPU %</th>
+                  <th>Mem</th>
                   <th></th>
                 </tr>
               </thead>
@@ -65,9 +65,9 @@
                 <tr>
                   <td>{{ host.name }}</td>
                   <td>{{ host.state }}</td>
-                  <td></td>
                   <td>{{ host.load_avg }}</td>
-                  <td></td>
+                  <td>{{ host.mem_used }} / {{ host.mem_total }}</td>
+                  <td><!-- TODO: Remove Node Button --></td>
                 </tr>
 {% endfor %}
               </tbody>

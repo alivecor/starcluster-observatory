@@ -57,7 +57,7 @@ def qdel(jid):
     subprocess.check_output([command], env=ENV, shell=True)
 
 
-def qstat_job_details(jid):
+def qstat_job_details(jid, state=None, queue_name=None):
     """Get detailed state of a running job."""
     command = '%s -j %d -xml' % (QSTAT_PATH, jid)
     result_xml = subprocess.check_output([command], env=ENV, shell=True)
@@ -76,6 +76,10 @@ def qstat_job_details(jid):
         'priority': job_info_element.find('JB_priority').text,
         'submission_timestamp': job_info_element.find('JB_submission_time').text
     }
+    if state:
+        job_details['state'] = state
+    if queue_name:
+        job_details['queue_name'] = queue_name
     # Get job args
     job_args = []
     job_arg_list = job_info_element.find('JB_job_args')

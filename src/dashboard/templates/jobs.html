@@ -66,8 +66,8 @@
                   <td>{{ job.job_id }}</td>
                   <td>{{ job.executable + ((' ' + ' '.join(job['job_args'])) if 'job_args' in job else '') }}</td>
                   <td>{{ job.state }}</td>
-                  <td>{{ job.queue }}</td>
-                  <td>{{ job.submission_time }}</td>
+                  <td>{{ job.queue_name }}</td>
+                  <td>{{ job.submission_timestamp }}</td>
                 </tr>
 {% endfor %}
               </tbody>
