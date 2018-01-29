@@ -56,7 +56,7 @@ def qstat():
     try:
         if job_id is None:
             queued, pending = sge.qstat()
-            result = [sge.qstat_job_details(int(job.job_id)) for job in queued + pending]
+            result = [sge.qstat_job_details(int(job['job_id'])) for job in queued + pending]
         else:
             result = sge.qstat_job_details(int(job_id))
     except subprocess.CalledProcessError as e:
