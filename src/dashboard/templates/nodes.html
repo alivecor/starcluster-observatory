@@ -68,9 +68,7 @@
                   <td>{{ host.load_avg }}</td>
                   <td>{{ host.mem_used }} / {{ host.mem_total }}</td>
                   <td>
-                    <div>
-                      <button class="btn btn-large btn-danger" data-toggle="confirmation" data-title="Terminate Instance?" title>Terminate</button>
-                    </div>
+                    <button class="btn btn-large btn-danger" data-toggle="confirmation" data-title="Terminate Instance?" data-container="body" title>Terminate</button>
                   </td>
                 </tr>
 {% endfor %}
