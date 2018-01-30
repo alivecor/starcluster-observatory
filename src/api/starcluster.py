@@ -55,7 +55,15 @@ def _parse_instance(instance_output):
     lines = instance_output.split('\n')
     for line in lines:
         components = line.split(': ')
-        if len(components) == 2:
+        if line.startswith('tags:'):
+            # Parse instance tags
+            tags_line = components[1].strip()
+            tags = tags_line.split(', ')
+            for tag in tags:
+                kv = tag.split('=')
+                if len(kv) == 2:
+                    instance_attributes[kv[0].lower()] = kv[1].strip()
+        elif len(components) == 2:
             # Add instance attribute to response dict
             instance_attributes[components[0]] = components[1].strip()
     return instance_attributes
