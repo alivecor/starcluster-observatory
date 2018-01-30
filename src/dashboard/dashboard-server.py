@@ -37,7 +37,13 @@ def jobs_tab():
     # Get nodes from backend service
     result = requests.get('http://%s:%s/qstat' % (args.api_server_host, args.api_server_port))
     jobs = result.json()
-    return render_template('jobs.html', static_url=static_url, jobs=jobs)
+    pending_jobs = [j for j in jobs if j['state'] == 'pending']
+    running_jobs = [j for j in jobs if j['state'] == 'running']
+    return render_template('jobs.html',
+                           static_url=static_url,
+                           jobs=jobs,
+                           pending_jobs=len(pending_jobs),
+                           running_jobs=len(running_jobs))
 
 
 @app.route('/nodes_tab.html')
@@ -47,7 +53,11 @@ def nodes_tab():
     total_cost = '3.04'
     result = requests.get('http://%s:%s/qhost' % (args.api_server_host, args.api_server_port))
     hosts = result.json()
-    return render_template('nodes.html', static_url=static_url, hosts=hosts, total_cost=total_cost)
+    return render_template('nodes.html',
+                           static_url=static_url,
+                           hosts=hosts,
+                           host_count=len(hosts),
+                           total_cost=total_cost)
 
 
 @app.route('/add_node')

@@ -104,3 +104,24 @@ body {
   border-radius: 50%;
 }
 
+
+/*
+ * Alignment of text over images.
+ */
+.centered-in-circle {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+.white-overlay-large {
+    color: white;
+    font-size: 6em;
+}
+
+.white-overlay-medium {
+    color: white;
+    font-size: 4em;
+}

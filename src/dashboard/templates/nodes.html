@@ -37,14 +37,20 @@
 
           <section class="row text-center placeholders">
             <div class="col-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIABAAJ12AAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <div class="text-muted">Nodes</div>
+              <div>
+                <img src="data:image/gif;base64,R0lGODlhAQABAIABAAJ12AAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle">
+                <div class="centered-in-circle white-overlay-large">{{ host_count }}</div>
+              </div>
+              <h4>Nodes</h4>
+              <div class="text-muted">Running</div>
             </div>
             <div class="col-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIABAADcgwAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">{{ total_cost }}$/hr</span>
+              <div>
+                <img src="data:image/gif;base64,R0lGODlhAQABAIABAADcgwAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle">
+                <div class="centered-in-circle white-overlay-medium">${{ total_cost }}</div>
+              </div>
+              <h4>Cost</h4>
+              <span class="text-muted">${{ total_cost }}/hr</span>
             </div>
           </section>
 
