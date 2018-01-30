@@ -24,5 +24,11 @@
 
   <body>
     {% block body %}{% endblock %}
+    <script type="text/javascript">
+        $('[data-toggle=confirmation]').confirmation({
+          rootSelector: '[data-toggle=confirmation]',
+          // other options
+         });
+    </script>
   </body>
 </html>
