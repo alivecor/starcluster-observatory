@@ -25,10 +25,8 @@
   <body>
     {% block body %}{% endblock %}
     <script type="text/javascript">
-        $('[data-toggle=confirmation]').confirmation({
-          rootSelector: '[data-toggle=confirmation]',
-          // other options
-         });
+        <!-- Enable bootstrap confirmation plugin -->
+        $('[data-toggle="confirmation"]').confirmation();
     </script>
   </body>
 </html>
