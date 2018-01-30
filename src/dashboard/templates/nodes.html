@@ -49,8 +49,11 @@
           </section>
 
           <h2>Nodes</h2>
+          <div>
+              <button class="btn btn-large btn-danger" data-toggle="confirmation" data-title="Terminate Instance?">Terminate</button>
+          </div>
           <div class="table-responsive">
-            <table id="hosts-table" class="table table-striped">
+            <table id="nodes-table" class="table table-striped">
               <thead>
                 <tr>
                   <th>Name</th>
@@ -68,7 +71,7 @@
                   <td>{{ host.load_avg }}</td>
                   <td>{{ host.mem_used }} / {{ host.mem_total }}</td>
                   <td>
-                    <button class="btn btn-large btn-danger" data-toggle="confirmation" data-title="Terminate Instance?" data-container="body" title>Terminate</button>
+                    <button class="btn btn-large btn-danger" data-toggle="confirmation" data-title="Terminate Instance?">Terminate</button>
                   </td>
                 </tr>
 {% endfor %}
@@ -80,8 +83,9 @@
     </div>
     <script type="text/javascript">
         <!-- Enable bootstrap confirmation plugin -->
+        $('[data-toggle=popover]').popover();
         $('[data-toggle="confirmation"]').confirmation();
-        $('#hosts-table').on('all.bs.table', function (e, name, args) {
+        $('#nodes-table').on('all.bs.table', function (e, name, args) {
             $('[data-toggle="confirmation"]').confirmation();
         });
     </script>
