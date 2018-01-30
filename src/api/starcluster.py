@@ -50,8 +50,14 @@ def _parse_cluster(cluster_name, listclusters_output):
 
 
 def _parse_instance(instance_output):
-    """Parse instance details from listinstances output."""
+    """Parse AWS instance details from listinstances output."""
     instance_attributes = {}
+    lines = instance_output.split('\n')
+    for line in lines:
+        components = line.split(': ')
+        if len(components) == 2:
+            # Add instance attribute to response dict
+            instance_attributes[components[0]] = components[1].strip()
     return instance_attributes
 
 
@@ -85,8 +91,11 @@ def list_instances():
     """List all running instances"""
     command = _starcluster_command() + ' listinstances'
     result = subprocess.check_output([command], shell=True)
-    lines = result.decode('utf8').split('\n')
-    return []
+    sections = result.decode('utf8').strip().split('\n\n')
+    instances = []
+    for section in sections:
+        instances.append(_parse_instance(section))
+    return instances
 
 
 def add_node(cluster_name, instance_type=None):
