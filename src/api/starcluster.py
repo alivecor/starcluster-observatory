@@ -12,12 +12,50 @@ def _starcluster_command():
     return '%s -c %s' % (STARCLUSTER_PATH, CONFIG_PATH)
 
 
+def _is_indented(text):
+    return text.startswith(' ') or text.startswith('\t')
+
+
 def _filter_cluster_name(cluster_name):
     """Filter cluster_name argument, only allow alphanumerics and .-_"""
     return re.sub('(?!-)\W', '', cluster_name)
 
 
-def get_status(cluster_name, config_path=None):
+def _parse_cluster(cluster_name, listclusters_output):
+    """Parse cluster details from listclusters_output."""
+    cluster_attributes = {
+        'name': cluster_name
+    }
+    lines = listclusters_output.split('\n')
+    for i, line in enumerate(lines):
+        components = line.split(': ')
+        if line.startswith('Cluster nodes:'):
+            # Add cluster node list
+            li = i+1
+            nodes = []
+            while _is_indented(lines[li]):
+                components = lines[li].strip().split(' ')
+                nodes.append({
+                    'alias': components[0],
+                    'state': components[1],
+                    'instance_id': components[2],
+                    'hostname': components[3],
+                })
+                li += 1
+            cluster_attributes['nodes'] = nodes
+        elif len(components) == 2:
+            # Add cluster attribute to response dict
+            cluster_attributes[components[0]] = components[1].strip()
+    return cluster_attributes
+
+
+def _parse_instance(instance_output):
+    """Parse instance details from listinstances output."""
+    instance_attributes = {}
+    return instance_attributes
+
+
+def get_status(cluster_name):
     """Get uptime and node list from cluster."""
     command = _starcluster_command() + ' listclusters ' + _filter_cluster_name(cluster_name)
     result = subprocess.check_output([command], shell=True)
@@ -27,6 +65,28 @@ def get_status(cluster_name, config_path=None):
     uptime = uptime_line.split(',')[1].strip()
     nodes = [line.lstrip().split(' ')[0] for line in node_lines]
     return uptime, nodes
+
+
+def list_clusters():
+    """List all clusters, including their instance lists."""
+    command = _starcluster_command() + ' listclusters'
+    result = subprocess.check_output([command], shell=True)
+    # listclusters output adds ----------------------------- as a header to the description of each cluster.
+    sections = re.compile('---*').split(result.decode('utf8'))
+    clusters = []
+    for i in range(1, len(sections), 2):
+        cluster_name = sections[i].split(' ')[0].strip()
+        cluster_attributes = sections[i+1]
+        clusters.append(_parse_cluster(cluster_name, cluster_attributes))
+    return clusters
+
+
+def list_instances():
+    """List all running instances"""
+    command = _starcluster_command() + ' listinstances'
+    result = subprocess.check_output([command], shell=True)
+    lines = result.decode('utf8').split('\n')
+    return []
 
 
 def add_node(cluster_name, instance_type=None):
