@@ -8,6 +8,8 @@ import re
 import requests
 import subprocess
 
+import aws_static
+
 
 parser = argparse.ArgumentParser(description='Run a dashboard web server exposing methods to administer StarCluster.', allow_abbrev=True)
 parser.add_argument('--host_ip', default='0.0.0.0', type=str, help='IP address of interface to listen on.')
@@ -49,14 +51,30 @@ def jobs_tab():
 @app.route('/nodes_tab.html')
 def nodes_tab():
     search_query = request.args.get('search')
-    # Get nodes from backend service
-    total_cost = '3.04'
-    result = requests.get('http://%s:%s/qhost' % (args.api_server_host, args.api_server_port))
-    hosts = result.json()
+    # Get hosts from backend service
+    total_cost = 0.0
+    sge_hosts_results = requests.get('http://%s:%s/qhost' % (args.api_server_host, args.api_server_port))
+    hosts = sge_hosts_results.json()
+
+    instances_results = aws_instances = requests.get('http://%s:%s/instances' % (args.api_server_host, args.api_server_port))
+    instances_by_alias = {i['alias'] : i for i in instances_results.json() if 'alias' in i}
+    nodes = []
+    for host in hosts:
+        host_dict = host.copy()
+        if host['name'] in instances_by_alias:
+            instance = instances_by_alias[host['name']]
+            host_dict['public_ip'] = instance['public_ip']
+            host_dict['state'] = instance['state']
+            host_dict['type'] = instance['type']
+            host_dict['uptime'] = instance['uptime']
+            if instance['type'] in aws_static.ondemand_instance_cost:
+                total_cost += aws_static.ondemand_instance_cost[instance['type']]
+        nodes.append(host_dict)
+
     return render_template('nodes.html',
                            static_url=static_url,
-                           hosts=hosts,
-                           host_count=len(hosts),
+                           hosts=nodes,
+                           host_count=len(nodes),
                            total_cost=total_cost)
 
 

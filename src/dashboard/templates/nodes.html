@@ -49,7 +49,7 @@
                 <img src="data:image/gif;base64,R0lGODlhAQABAIABAADcgwAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle">
                 <div class="centered-in-circle white-overlay-medium">${{ total_cost }}</div>
               </div>
-              <h4>Cost</h4>
+              <h4>Cost/hr</h4>
               <span class="text-muted">On-demand</span>
             </div>
           </section>
@@ -61,8 +61,10 @@
                 <tr>
                   <th>Name</th>
                   <th>State</th>
+                  <th>Type</th>
                   <th>CPU %</th>
                   <th>Mem</th>
+                  <th>Uptime</th>
                   <th></th>
                 </tr>
               </thead>
@@ -71,10 +73,14 @@
                 <tr>
                   <td>{{ host.name }}</td>
                   <td>{{ host.state }}</td>
+                  <td>{{ host.type }}</td>
                   <td>{{ host.load_avg }}</td>
                   <td>{{ host.mem_used }} / {{ host.mem_total }}</td>
+                  <td>{{ host.uptime }}</td>
                   <td>
+{% if not 'master' in host.name %}
                     <button class="btn btn-large btn-danger" data-toggle="confirmation" data-title="Terminate Instance?">Terminate</button>
+{% endif %}
                   </td>
                 </tr>
 {% endfor %}
