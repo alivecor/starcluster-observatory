@@ -40,6 +40,7 @@ def cluster_status():
 
 @app.route('/qhost')
 def qhost():
+    """Returns SGE execution hosts."""
     try:
         result = sge.qhost()
     except subprocess.CalledProcessError as e:
@@ -48,6 +49,32 @@ def qhost():
             'error': 'An error occurred while running qhost'
         })
     return jsonify(result)
+
+
+@app.route('/instances')
+def instances():
+    """List all AWS instances in the current cluster.  Should match up with results of /qhost, but not necessarily."""
+    try:
+        instances = starcluster.list_instances()
+    except subprocess.CalledProcessError as e:
+        return jsonify({
+            'status': 'error',
+            'error': 'An error occurred while running starcluster listinstances'
+        })
+
+    try:
+        clusters = starcluster.list_clusters()
+    except subprocess.CalledProcessError as e:
+        return jsonify({
+            'status': 'error',
+            'error': 'An error occurred while running starcluster listclusters'
+        })
+    instances_by_alias = {i['alias'] : i for i in instances if 'alias' in i}
+    # Find instance of our cluster.
+    cluster = next((c for c in clusters if c['name'] == args.cluster_name), None)
+    node_aliases = [node['alias'] for node in cluster['nodes']]
+    cluster_instances = [instances_by_alias[a] for a in node_aliases]
+    return jsonify(cluster_instances)
 
 
 @app.route('/qstat')
