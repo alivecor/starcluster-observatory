@@ -108,14 +108,17 @@ def list_instances():
 
 def add_node(cluster_name, instance_type=None):
     """Adds a node to the specified cluster."""
-    i_flag = ''
+    command = STARCLUSTER_PATH
+    command_args = [STARCLUSTER_PATH, '-c', CONFIG_PATH, 'addnode']
     if instance_type:
-        i_flag = '-I ' + instance_type
-    command = _starcluster_command() + ' addnode ' + i_flag + ' ' + _filter_cluster_name(cluster_name)
-    subprocess.check_output([command], shell=True)
+        command_args.append('-I')
+        command_args.append(instance_type)
+    command_args.append(_filter_cluster_name(cluster_name))
+    os.spawnv(os.P_NOWAIT, command, command_args)
 
 
 def remove_node(cluster_name, node_alias):
     """Removes the specified node from cluster."""
-    command = _starcluster_command() + ' removenode -c -f -a ' + node_alias + ' ' + _filter_cluster_name(cluster_name)
-    subprocess.check_output([command], shell=True)
+    command = STARCLUSTER_PATH
+    command_args = [STARCLUSTER_PATH, '-c', CONFIG_PATH, 'removenode', '--confirm', '-f', '-a', node_alias, _filter_cluster_name(cluster_name)]
+    os.spawnv(os.P_NOWAIT, command, command_args)
