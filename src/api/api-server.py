@@ -95,6 +95,20 @@ def qstat():
     return jsonify(result)
 
 
+@app.route('/jobs/<jid>/cancel')
+def cancel_job(jid):
+    try:
+        sge.qdel(int(jid))
+    except subprocess.CalledProcessError as e:
+        return jsonify({
+        'status': 'error',
+        'error': 'An error occurred while running qdel'
+    })
+    return jsonify({
+        'status': 'ok',
+    })
+
+
 @app.route('/nodes/add')
 def cluster_add_node():
     instance_type = request.args.get('instance_type')

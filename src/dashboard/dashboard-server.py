@@ -1,6 +1,7 @@
 """A simple server for directing starcluster from another ec2 instance in our subnet."""
 import argparse
 from flask import Flask
+from flask import redirect
 from flask import render_template
 from flask import request
 import os
@@ -22,9 +23,10 @@ args = parser.parse_args()
 
 app = Flask(__name__)
 
+url_prefix = '/observatory'
 
 def static_url(path):
-    return os.path.join('/observatory/static/', path)
+    return os.path.join(url_prefix, 'static', path)
 
 
 @app.route('/')
@@ -88,13 +90,15 @@ def add_node():
 @app.route('/remove_node')
 def remove_node():
     # Remove specified node
-    return ''
+    return redirect(os.path.join(url_prefix, 'nodes_tab.html'), code=302)
 
 
 @app.route('/cancel_job')
 def cancel_job():
     # Cancel the specified job
-    return ''
+    jid = request.args.get('jid')
+    cancel_result = requests.get('http://%s:%s/jobs/%s/cancel' % (args.api_server_host, args.api_server_port, jid))
+    return redirect(os.path.join(url_prefix, 'jobs_tab.html'), code=302)
 
 
 if __name__ == '__main__':
