@@ -79,7 +79,7 @@
                   <td>{{ host.uptime }}</td>
                   <td>
 {% if not 'master' in host.name %}
-                    <button class="btn btn-large btn-danger" data-toggle="confirmation" data-title="Terminate Instance?">Terminate</button>
+                    <a href="remove_node?alias={{ host.name }}" class="btn btn-large btn-danger" data-toggle="confirmation" data-title="Terminate Instance?">Terminate</a>
 {% endif %}
                   </td>
                 </tr>

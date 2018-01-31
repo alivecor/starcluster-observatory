@@ -89,6 +89,8 @@ def add_node():
 
 @app.route('/remove_node')
 def remove_node():
+    alias = request.args.get('alias')
+    remove_result = requests.get('http://%s:%s/nodes/%s/remove' % (args.api_server_host, args.api_server_port, alias))
     # Remove specified node
     return redirect(os.path.join(url_prefix, 'nodes_tab.html'), code=302)
 
