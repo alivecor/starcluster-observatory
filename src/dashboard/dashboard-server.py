@@ -82,8 +82,12 @@ def nodes_tab():
 
 @app.route('/add_node')
 def add_node():
-    node_type = request.args.get('instance_type')
+    instance_type = request.args.get('instance_type')
     # Add a node
+    request_url = 'http://%s:%s/nodes/add' % (args.api_server_host, args.api_server_port)
+    if instance_type:
+        request_url = request_url + '?instance_type=%s' % instance_type
+    add_result = requests.get(request_url)
     return redirect(os.path.join(url_prefix, 'nodes_tab.html'), code=302)
 
 
