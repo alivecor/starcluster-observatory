@@ -55,6 +55,7 @@
           </section>
 
           <h2>Nodes</h2>
+
           <div class="table-responsive">
             <table id="nodes-table" class="table table-striped" data-toggle="table" data-striped="true" data-search="true" data-mobile-responsive="true">
               <thead>
@@ -79,7 +80,10 @@
                   <td>{{ host.uptime }}</td>
                   <td>
 {% if not 'master' in host.name %}
-                    <a href="remove_node?alias={{ host.name }}" class="btn btn-large btn-danger" data-toggle="confirmation" data-title="Terminate Instance?">Terminate</a>
+                    <a href="remove_node?alias={{ host.name }}" class="btn btn-large btn-danger" data-toggle="confirmation"
+                       data-singleton="true" data-title="Terminate Instance?">
+                      Terminate
+                    </a>
 {% endif %}
                   </td>
                 </tr>
@@ -87,7 +91,26 @@
               </tbody>
             </table>
           </div>
-        </main>
+
+          <div>
+            <p></p>
+            <p>
+              <a href="add_node?instance_type=p2.xlarge" class="btn btn-large btn-success" data-toggle="confirmation"
+                 data-title="Launch new p2.xlarge instance?" data-btn-ok-icon="glyphicon glyphicon-share-alt" data-singleton="true"
+                 data-btn-cancel-icon="glyphicon glyphicon-ban-circle" data-btn-cancel-class="btn-danger" data-btn-ok-class="btn-success"
+                 data-content="The new instance maye take a minute to appear.">
+                Launch p2.xlarge
+              </a>
+              <a href="add_node?instance_type=p3.2xlarge" class="btn btn-large btn-success" data-toggle="confirmation"
+                 data-title="Launch new p3.2xlarge instance?" data-btn-ok-icon="glyphicon glyphicon-share-alt" data-singleton="true"
+                 data-btn-cancel-icon="glyphicon glyphicon-ban-circle" data-btn-cancel-class="btn-danger" data-btn-ok-class="btn-success"
+                 data-content="The new instance maye take a minute to appear.">
+                Launch p3.2xlarge
+              </a>
+            </p>
+          </div>
+
+        </div>
       </div>
     </div>
     <script type="text/javascript">

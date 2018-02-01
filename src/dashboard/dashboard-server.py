@@ -84,7 +84,7 @@ def nodes_tab():
 def add_node():
     node_type = request.args.get('instance_type')
     # Add a node
-    return ''
+    return redirect(os.path.join(url_prefix, 'nodes_tab.html'), code=302)
 
 
 @app.route('/remove_node')
