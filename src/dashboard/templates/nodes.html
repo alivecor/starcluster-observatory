@@ -124,17 +124,17 @@
             $('[data-toggle="confirmation"]').confirmation();
         });
 
-        $(function() {
-            $.ajax({
-                url: "/observatory/spot_prices",
-                type: "get",
-                success: function(response) {
-                    $("#spot-price-panel").html(response);
-                },
-                error: function(xhr) {
-                    console.log("Failed to populate spot prices.")
-                }
-            });
+        //$(function() {
+        //    $.ajax({
+        //        url: "/observatory/spot_prices",
+        //        type: "get",
+        //        success: function(response) {
+        //            $("#spot-price-panel").html(response);
+        //        },
+        //        error: function(xhr) {
+        //            console.log("Failed to populate spot prices.")
+        //        }
+        //    });
         });
     </script>
 {% endblock %}
