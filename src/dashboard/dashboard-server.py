@@ -58,24 +58,28 @@ def nodes_tab():
     # Get hosts from backend service
     total_cost = 0.0
     sge_hosts_results = requests.get('http://%s:%s/qhost' % (args.api_server_host, args.api_server_port))
-    hosts = sge_hosts_results.json()
+    hosts_by_name = {h['name'] : h for h in sge_hosts_results.json() if 'name' in h}
 
     instances_results = requests.get('http://%s:%s/instances' % (args.api_server_host, args.api_server_port))
-    instances_by_alias = {i['alias'] : i for i in instances_results.json() if 'alias' in i}
+    instances = instances_results.json()
+
     nodes = []
-    for host in hosts:
-        host_dict = host.copy()
-        if host['name'] in instances_by_alias:
-            instance = instances_by_alias[host['name']]
-            host_dict['public_ip'] = instance['public_ip']
-            host_dict['state'] = instance['state']
-            host_dict['type'] = instance['type']
-            host_dict['uptime'] = instance['uptime']
-            if instance['type'] in aws_static.ondemand_instance_cost:
-                total_cost += aws_static.ondemand_instance_cost[instance['type']]
-            # Only display host if it appears in the aws instances list.
-            # This is because terminated instances can still show up in qhost if they didn't shut down smoothly.
-            nodes.append(host_dict)
+    for instance in instances:
+        name = instance['name']
+        if name in hosts_by_name:
+            sge_host = hosts_by_name[name]
+            host_dict = sge_host.copy()
+        else:
+            # If an instance is visible in starcluster listclusters, but not qhost, then it is probably booting up.
+            # (or failed to join SGE)
+            host_dict = {}
+        host_dict['public_ip'] = instance['public_ip']
+        host_dict['state'] = instance['state']
+        host_dict['type'] = instance['type']
+        host_dict['uptime'] = instance['uptime']
+        if instance['type'] in aws_static.ondemand_instance_cost:
+            total_cost += aws_static.ondemand_instance_cost[instance['type']]
+        nodes.append(host_dict)
 
     return render_template('nodes.html',
                            static_url=static_url,
