@@ -138,6 +138,34 @@ def cluster_remove_node(node_alias):
     })
 
 
+@app.route('/spot_history')
+def spot_prices():
+    type_list = request.args.get('instance_types')
+    if type_list is None:
+        instance_types = ['p2.xlarge', 'p3.2xlarge']
+    else:
+        instance_types = type_list.split(',')
+    prices = []
+    try:
+        for instance_type in instance_types:
+            current, average, max = starcluster.spot_history(instance_type)
+            prices.append(dict(
+                instance_type=instance_type,
+                current=current,
+                average=average,
+                max=max
+            ))
+    except subprocess.CalledProcessError as e:
+        return jsonify({
+            'status': 'error',
+            'error': 'An error occurred while running starcluster spothistory'
+        })
+    return jsonify({
+        'status': 'ok',
+        'prices': prices
+    })
+
+
 def run_schedule():
     """Run loop for the background task scheduler thread."""
     while 1:

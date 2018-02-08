@@ -40,7 +40,9 @@ def jobs_tab():
     search_query = request.args.get('search')
     # Get nodes from backend service
     result = requests.get('http://%s:%s/qstat' % (args.api_server_host, args.api_server_port))
-    jobs = result.json()
+    jobs = []
+    if result:
+        jobs = result.json()
     pending_jobs = [j for j in jobs if j['state'] == 'pending']
     running_jobs = [j for j in jobs if j['state'] == 'running']
     return render_template('jobs.html',
@@ -58,7 +60,7 @@ def nodes_tab():
     sge_hosts_results = requests.get('http://%s:%s/qhost' % (args.api_server_host, args.api_server_port))
     hosts = sge_hosts_results.json()
 
-    instances_results = aws_instances = requests.get('http://%s:%s/instances' % (args.api_server_host, args.api_server_port))
+    instances_results = requests.get('http://%s:%s/instances' % (args.api_server_host, args.api_server_port))
     instances_by_alias = {i['alias'] : i for i in instances_results.json() if 'alias' in i}
     nodes = []
     for host in hosts:
@@ -99,6 +101,13 @@ def remove_node():
     remove_result = requests.get('http://%s:%s/nodes/%s/remove' % (args.api_server_host, args.api_server_port, alias))
     # Remove specified node
     return redirect(os.path.join(url_prefix, 'nodes_tab.html'), code=302)
+
+
+@app.route('/spot_prices')
+def spot_prices():
+    alias = request.args.get('alias')
+    # Remove specified node
+    return "<p>Spot prices:</p><p>Placeholder</p>"
 
 
 @app.route('/cancel_job')

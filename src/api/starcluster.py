@@ -96,7 +96,11 @@ def list_clusters():
 
 
 def list_instances():
-    """List all running instances"""
+    """List all running instances.
+
+    Returns:
+        [{}] - The list of running instances.
+    """
     command = _starcluster_command() + ' listinstances'
     result = subprocess.check_output([command], shell=True)
     sections = result.decode('utf8').strip().split('\n\n')
@@ -106,19 +110,62 @@ def list_instances():
     return instances
 
 
-def add_node(cluster_name, instance_type=None):
-    """Adds a node to the specified cluster."""
+def spot_history(instance_type):
+    """Get spot bid history for the specified instance type.
+
+    Args:
+        instance_type (string) - The instance type i.e. p2.xlarge
+
+    Returns:
+        current, average, max (string, string, string) prices in USD.
+    """
+    command = _starcluster_command() + ' spothistory ' + instance_type
+    result = subprocess.check_output([command], shell=True)
+    lines = result.decode('utf8').strip().split('\n')
+    current = ''
+    average = ''
+    max = ''
+    for line in lines:
+        if 'Current price:' in line:
+            current = line.split('$')[-1]
+        elif 'Max price:' in line:
+            max = line.split('$')[-1]
+        elif 'Average price:' in line:
+            average = line.split('$')[-1]
+    return current, average, max
+
+
+def add_node(cluster_name, instance_type=None, ami=None, spot_bid=None):
+    """Adds a node to the specified cluster.
+    Note: Launching a new node node may take several minutes, but add_node returns
+    immediately after launching the subprocess and does not wait.
+
+    Args:
+        cluster_name (string) - The name of the cluster
+        instance_type (string) - The type of instance i.e. p3.2xlarge.
+        ami (string) - The id of the amazon machine image to launch.
+        spot_bid (string) - If specified, launch a spot instance at the this bid price.  Otherwise, launch an on-demand instance.
+    """
     command = STARCLUSTER_PATH
     command_args = [STARCLUSTER_PATH, '-c', CONFIG_PATH, 'addnode']
-    if instance_type:
+    if not instance_type is None:
         command_args.append('-I')
         command_args.append(instance_type)
+    if not ami is None:
+        command_args.append('-i')
+        command_args.append(ami)
+    if not spot_bid is None:
+        command_args.append('-b')
+        command_args.append(spot_bid)
     command_args.append(_filter_cluster_name(cluster_name))
     os.spawnv(os.P_NOWAIT, command, command_args)
 
 
 def remove_node(cluster_name, node_alias):
-    """Removes the specified node from cluster."""
+    """Removes the specified node from cluster.
+    Note: Terminating a new node node may take several minutes, but remove_node returns
+    immediately after launching the subprocess and does not wait.
+    """
     command = STARCLUSTER_PATH
     command_args = [STARCLUSTER_PATH, '-c', CONFIG_PATH, 'removenode', '--confirm', '-f', '-a', node_alias, _filter_cluster_name(cluster_name)]
     os.spawnv(os.P_NOWAIT, command, command_args)

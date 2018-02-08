@@ -109,7 +109,9 @@
               </a>
             </p>
           </div>
-
+          <div id="spot-price-panel">
+            <p>Latest spot prices:</p>
+          </div>
         </div>
       </div>
     </div>
@@ -119,6 +121,19 @@
         $('[data-toggle="confirmation"]').confirmation();
         $('#nodes-table').on('all.bs.table', function (e, name, args) {
             $('[data-toggle="confirmation"]').confirmation();
+        });
+
+        $(function() {
+            $.ajax({
+                url: "/observatory/spot_prices",
+                type: "get",
+                success: function(response) {
+                    $("#spot-price-panel").html(response);
+                },
+                error: function(xhr) {
+                    console.log("Failed to populate spot prices.")
+                }
+            });
         });
     </script>
 {% endblock %}
