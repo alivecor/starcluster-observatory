@@ -83,15 +83,19 @@ def qstat_job_details(jid, state=None, queue_name=None):
     # Get job args
     job_args = []
     job_arg_list = job_info_element.find('JB_job_args')
-    for e in job_arg_list:
-        job_args.append(e[0].text)
+    if job_arg_list:
+        for e in job_arg_list:
+            job_args.append(e[0].text)
     job_details['job_args'] = job_args
     # Get environment
     env = {}
     job_env_list = job_info_element.find('JB_env_list')
     for e in job_env_list:
         variable_name = e[0].text
-        variable_value = e[1].text
+        if len(e) > 1:
+            variable_value = e[1].text
+        else:
+            variable_value = ''
         env[variable_name] = variable_value
     job_details['env'] = env
     return job_details
