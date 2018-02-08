@@ -1,6 +1,7 @@
 """Static AWS Constants"""
 
 
+# Cost per hour of on-demand instances by type
 ondemand_instance_cost = {
     # General Purpose
     't2.nano':     0.0058,
@@ -15,6 +16,12 @@ ondemand_instance_cost = {
     'c4.2xlarge':  0.398,
     'c4.4xlarge':  0.796,
     'c4.8xlarge':  1.591,
+    'c5.large': 0.085,
+    'c5.xlarge': 0.17,
+    'c5.2xlarge': 0.34,
+    'c5.4xlarge': 0.68,
+    'c5.9xlarge': 1.53,
+    'c5.18xlarge': 3.06,
     # GPU Compute
     'p2.xlarge':   0.9,
     'p2.8xlarge':  7.2,
@@ -30,3 +37,44 @@ ondemand_instance_cost = {
     'x1.32xlarge': 13.338,
 }
 
+
+GENERAL_PURPOSE = 'General'
+CPU = 'CPU'
+GPU = 'GPU'
+MEMORY = 'Memory'
+
+# Display name for different instance types.
+instance_types = {
+    # General Purpose
+    't2.nano': GENERAL_PURPOSE,
+    't2.micro': GENERAL_PURPOSE,
+    't2.small': GENERAL_PURPOSE,
+    't2.medium': GENERAL_PURPOSE,
+    't2.large': GENERAL_PURPOSE,
+    't2.xlarge': GENERAL_PURPOSE,
+    # Compute Optimized
+    'c4.large': CPU,
+    'c4.xlarge': CPU,
+    'c4.2xlarge': CPU,
+    'c4.4xlarge': CPU,
+    'c4.8xlarge': CPU,
+    'c5.large': CPU,
+    'c5.xlarge': CPU,
+    'c5.2xlarge': CPU,
+    'c5.4xlarge': CPU,
+    'c5.9xlarge': CPU,
+    'c5.18xlarge': CPU,
+    # GPU Compute
+    'p2.xlarge': GPU,
+    'p2.8xlarge': GPU,
+    'p2.16xlarge': GPU,
+    'p3.2xlarge': GPU,
+    'p3.8xlarge': GPU,
+    'p3.16xlarge': GPU,
+    'g3.4xlarge': GPU,
+    'g3.8xlarge': GPU,
+    'g3.16xlarge': GPU,
+    # Memory Optimized
+    'x1.16xlarge': MEMORY,
+    'x1.32xlarge': MEMORY,
+}

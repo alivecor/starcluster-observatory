@@ -1,0 +1,40 @@
+<!-- HTML content of launch instance popover -->
+<div class="col-sm-2 " style="width:250px;">
+    <table class="table table-striped" data-striped="true">
+        <thead>
+            <tr>
+                <th>Instance type</th>
+                <th>On-demand</th>
+                <th>Current</th>
+                <th>30 Day Average</th>
+                <th>30 Day Max</th>
+            </tr>
+        </thead>
+{% for price in prices %}
+        <tr>
+            <td>${{ price.instance_type }}</td>
+            <td>${{ price.on_demand }}</td>
+            <td>${{ price.current }}</td>
+            <td>${{ price.average }}</td>
+            <td>${{ price.max }}</td>
+        </tr>
+{% endfor %}
+    </table>
+</div>
+<div class="clearfix col-sm-10" style="margin:8px 0;">
+    <button type="button" class="btn btn-success btn-launch">Launch</button>
+    <button type="button" class="btn btn-cancel btn-cancel-option">Cancel</button>
+</div>
+<!--
+<div class="btn-group" data-toggle="buttons">
+  <label class="btn btn-primary active">
+    <input type="radio" name="options" id="option1" autocomplete="off" checked> Radio 1 (preselected)
+  </label>
+  <label class="btn btn-primary">
+    <input type="radio" name="options" id="option2" autocomplete="off"> Radio 2
+  </label>
+  <label class="btn btn-primary">
+    <input type="radio" name="options" id="option3" autocomplete="off"> Radio 3
+  </label>
+</div>
+-->

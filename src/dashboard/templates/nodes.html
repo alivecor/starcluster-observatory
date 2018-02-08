@@ -52,10 +52,6 @@
               <h4>Cost/hr</h4>
               <span class="text-muted">On-demand</span>
             </div>
-            <div class="col-6 col-sm-3 placeholder">
-              <div class="table-responsive" id="spot-price-panel">
-              </div>
-            </div>
           </section>
 
           <h2>Nodes</h2>
@@ -99,18 +95,12 @@
           <div>
             <p></p>
             <p>
-              <a href="add_node?instance_type=p2.xlarge" class="btn btn-large btn-success" data-toggle="confirmation"
-                 data-title="Launch new p2.xlarge instance?" data-btn-ok-icon="glyphicon glyphicon-share-alt" data-singleton="true"
-                 data-btn-cancel-icon="glyphicon glyphicon-ban-circle" data-btn-cancel-class="btn-danger" data-btn-ok-class="btn-success"
-                 data-content="The new instance may take a minute to appear.">
-                Launch p2.xlarge
-              </a>
-              <a href="add_node?instance_type=p3.2xlarge" class="btn btn-large btn-success" data-toggle="confirmation"
-                 data-title="Launch new p3.2xlarge instance?" data-btn-ok-icon="glyphicon glyphicon-share-alt" data-singleton="true"
-                 data-btn-cancel-icon="glyphicon glyphicon-ban-circle" data-btn-cancel-class="btn-danger" data-btn-ok-class="btn-success"
-                 data-content="The new instance may take a minute to appear.">
-                Launch p3.2xlarge
-              </a>
+              <div id="popover1" class="col-sm-12 col-xs-12 col-md-9">
+		        <a title="" class="btn btn-success change-project" href="javascript:;" data-original-title="Launch Instance" aria-describedby="popover972114">Launch Instance</a>
+                <div class="hide" id="select-div">
+                  <!-- Populated by launch_popover AJAX request -->
+	            </div>
+	          </div>
             </p>
           </div>
         </div>
@@ -124,17 +114,48 @@
             $('[data-toggle="confirmation"]').confirmation();
         });
 
-        //$(function() {
-        //    $.ajax({
-        //        url: "/observatory/spot_prices",
-        //        type: "get",
-        //        success: function(response) {
-        //            $("#spot-price-panel").html(response);
-        //        },
-        //        error: function(xhr) {
-        //            console.log("Failed to populate spot prices.")
-        //        }
-        //    });
+        $(function() {
+            // Populate launch instance popover
+            $.ajax({
+                url: "/observatory/launch_popover",
+                type: "get",
+                success: function(response) {
+                    $("#select-div").html(response);
+                    $(window).trigger('ConfigurePopover', {});
+                },
+                error: function(xhr) {
+                    console.log("Failed to populate launch panel.")
+                }
+            });
+        });
+
+        $(window).bind('ConfigurePopover', function(e, data) {
+            $('.change-project').popover({
+                placement : 'Right',
+                title : 'Change',
+                trigger : 'click',
+                html : true,
+                content : function(){
+                    var content = '';
+                    content = $('#select-div').html();
+                    return content;
+                }
+            }).on('shown.bs.popover', function(){});
+
+            $(document).delegate('.btn-launch','click', function(e) {
+                e.preventDefault();
+                // TODO: Get instance type and (spot vs. on-demand)
+                // TODO: launch instance
+                alert('Go Click');
+            });
+
+            $(document).delegate('.btn-cancel-option', 'click', function(e) {
+                e.preventDefault();
+                var element = $(this).parents('.popover');
+                if(element.size()){
+                    $(element).removeClass('in').addClass('out');
+                }
+            });
         });
     </script>
 {% endblock %}

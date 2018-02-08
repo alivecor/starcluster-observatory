@@ -17,6 +17,8 @@ parser.add_argument('--host_ip', default='0.0.0.0', type=str, help='IP address o
 parser.add_argument('--port', default=6360, type=int, help='Port to listen on.')
 parser.add_argument('--api_server_host', default='127.0.0.1', type=str, help='IP address of the backend.')
 parser.add_argument('--api_server_port', default=6361, type=int, help='Port to use to connect to API server.')
+parser.add_argument('--instance_types', default='p2.xlarge,p3.2xlarge', type=str, help='Instance types user is allowed to launch.')
+
 
 args = parser.parse_args()
 
@@ -107,11 +109,15 @@ def remove_node():
     return redirect(os.path.join(url_prefix, 'nodes_tab.html'), code=302)
 
 
-@app.route('/spot_prices')
-def spot_prices():
-    prices_results = requests.get('http://%s:%s/spot_history' % (args.api_server_host, args.api_server_port))
+@app.route('/launch_popover')
+def launch_popover():
+    """Returns HTML content to populate the launch new instance popover."""
+    prices_results = requests.get('http://%s:%s/spot_history?instance_types=%s' % (
+        args.api_server_host, args.api_server_port, args.instance_types
+    ))
     results = prices_results.json()
-    return render_template('spot_prices.html', prices=results['prices'])
+    prices = results['prices']
+    return render_template('launch_popover.html', prices=prices])
 
 
 @app.route('/cancel_job')
