@@ -12,7 +12,7 @@ import subprocess
 import aws_static
 
 
-parser = argparse.ArgumentParser(description='Run a dashboard web server exposing methods to administer StarCluster.', allow_abbrev=True)
+parser = argparse.ArgumentParser(description='Run a dashboard web server exposing methods to administer StarCluster.')
 parser.add_argument('--host_ip', default='0.0.0.0', type=str, help='IP address of interface to listen on.')
 parser.add_argument('--port', default=6360, type=int, help='Port to listen on.')
 parser.add_argument('--api_server_host', default='127.0.0.1', type=str, help='IP address of the backend.')

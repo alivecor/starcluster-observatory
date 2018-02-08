@@ -12,7 +12,7 @@ import sge
 import starcluster
 
 
-parser = argparse.ArgumentParser(description='Run a server which exposes the starcluster and qstat APIs.', allow_abbrev=True)
+parser = argparse.ArgumentParser(description='Run a server which exposes the starcluster and qstat APIs.')
 parser.add_argument('--host_ip', default='0.0.0.0', type=str, help='IP address of interface to listen on.')
 parser.add_argument('--port', default=6361, type=int, help='Port to listen on.')
 parser.add_argument('--cluster_name', default='dev', type=str, help='Name of the cluster to manage.')
