@@ -1,5 +1,18 @@
-<p>Spot Prices:</p>
-
-{% for instance in instances %}
-<p>instance type: $$$</p>
+<table class="table table-striped" data-striped="true">
+    <thead>
+        <tr>
+            <th>Instance type</th>
+            <th>Current</th>
+            <th>30 Day Average</th>
+            <th>30 Day Max</th>
+        </tr>
+    </thead>
+{% for price in prices %}
+    <tr>
+        <td>${{ price.instance_type }}</td>
+        <td>${{ price.current }}</td>
+        <td>${{ price.average }}</td>
+        <td>${{ price.max }}</td>
+    </tr>
 {% endfor %}
+</table>

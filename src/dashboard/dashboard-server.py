@@ -105,9 +105,9 @@ def remove_node():
 
 @app.route('/spot_prices')
 def spot_prices():
-    alias = request.args.get('alias')
-    # Remove specified node
-    return "<p>Spot prices:</p><p>Placeholder</p>"
+    prices_results = requests.get('http://%s:%s/spot_history' % (args.api_server_host, args.api_server_port))
+    results = prices_results.json()
+    return render_template('spot_prices.html', prices=results['prices'])
 
 
 @app.route('/cancel_job')
