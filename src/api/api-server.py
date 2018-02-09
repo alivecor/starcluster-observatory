@@ -3,11 +3,9 @@ import argparse
 from flask import Flask
 from flask import jsonify
 from flask import request
-import schedule
 import subprocess
-from threading import Thread
-import time
 
+import loadbalancer
 import sge
 import starcluster
 
@@ -17,12 +15,19 @@ parser.add_argument('--host_ip', default='0.0.0.0', type=str, help='IP address o
 parser.add_argument('--port', default=6361, type=int, help='Port to listen on.')
 parser.add_argument('--cluster_name', default='dev', type=str, help='Name of the cluster to manage.')
 parser.add_argument('--starcluster_config', default='/etc/starcluster/config', type=str, help='Path to starcluster config file.')
-parser.add_argument('--idle_timeout', default=30, type=int, help='Shut down nodes if idle longer than this (minutes).')
+parser.add_argument('--idle_timeout', default=20, type=int, help='Shut down nodes if idle longer than this (minutes).')
+parser.add_argument('--max_capacity', default=16, type=int, help='Maximum number of nodes to allow.')
 
 args = parser.parse_args()
 
 
 app = Flask(__name__)
+
+lb = loadbalancer.LoadBalancer(args.max_capacity,
+                               cpu_type='c4.2xlarge',
+                               gpu_type='p3.2xlarge',
+                               idle_timeout=args.idle_timeout * 60,
+                               polling_interval=60)
 
 
 @app.route('/status')
@@ -166,47 +171,6 @@ def spot_prices():
     })
 
 
-def run_schedule():
-    """Run loop for the background task scheduler thread."""
-    while 1:
-        schedule.run_pending()
-        time.sleep(1)
-
-
-_idle_hosts = {}  # Maps host name to first time (seconds) host was detected idle.
-def check_idle():
-    time_now = time.time()
-    print('Checking for idle hosts at time %.1f.' % time_now)
-    # First, check to see if any hosts are idle.
-    hosts = sge.qhost()
-    host_names = set([h['name'] for h in hosts if not 'master' in ['name']])
-    queued_jobs, _ = sge.qstat()
-    # Hosts with no jobs scheduled on them
-    busy_hosts = set([j['queue_name'].split('@')[1] for j in queued_jobs])
-    # Remove hosts with jobs from idle list
-    for busy_host in busy_hosts:
-        if busy_host in _idle_hosts:
-            del _idle_hosts[busy_host]
-    # Add hosts with no jobs to idle list
-    idle_hosts = host_names.difference(busy_hosts)
-    for host in idle_hosts:
-        if host not in _idle_hosts:
-            _idle_hosts[host] = time_now
-    # Check if any hosts have been idle longer than idle_timeout
-    hosts_to_remove = []
-    for host, start_time in _idle_hosts.copy().items():
-        if time_now - start_time > (args.idle_timeout * 60):
-            hosts_to_remove.append(host)
-            del _idle_hosts[host]
-    for host in hosts_to_remove:
-        try:
-            starcluster.remove_node(args.cluster_name, host)
-        except subprocess.CalledProcessError as e:
-            print('Error auto-removing idle host %s: %s' % (host, str(e)))
-
-
 if __name__ == '__main__':
-    schedule.every(60).seconds.do(check_idle)
-    t = Thread(target=run_schedule)
-    t.start()
+    lb.start_polling()
     app.run(host=args.host_ip, port=args.port)
