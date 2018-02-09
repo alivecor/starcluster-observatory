@@ -1,10 +1,12 @@
 """A simple server for directing starcluster from another ec2 instance in our subnet."""
 import argparse
+import datetime
 from flask import Flask
 from flask import redirect
 from flask import render_template
 from flask import request
 import os
+import pytz
 import re
 import requests
 import subprocess
@@ -18,15 +20,14 @@ parser.add_argument('--port', default=6360, type=int, help='Port to listen on.')
 parser.add_argument('--api_server_host', default='127.0.0.1', type=str, help='IP address of the backend.')
 parser.add_argument('--api_server_port', default=6361, type=int, help='Port to use to connect to API server.')
 parser.add_argument('--instance_types', default='p2.xlarge,p3.2xlarge', type=str, help='Instance types user is allowed to launch.')
-
-
 args = parser.parse_args()
 
+# TODO: make timezone a parameter or infer from region.
+timezone = pytz.timezone('America/Los_Angeles')
 
 app = Flask(__name__)
 
 url_prefix = '/observatory'
-
 def static_url(path):
     return os.path.join(url_prefix, 'static', path)
 
@@ -45,6 +46,11 @@ def jobs_tab():
     jobs = []
     if result:
         jobs = result.json()
+    for job in jobs:
+        if 'submission_timestamp' in job:
+            timestamp = int(job['submission_timestamp'])
+            dt = datetime.datetime.fromtimestamp(timestamp, tz=timezone)
+            job['submission_time'] = dt.strftime('%Y-%m-%d %I:%M:%S %p')
     pending_jobs = [j for j in jobs if j['state'] == 'pending']
     running_jobs = [j for j in jobs if j['state'] == 'running']
     return render_template('jobs.html',
