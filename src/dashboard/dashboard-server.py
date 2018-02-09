@@ -68,6 +68,7 @@ def nodes_tab():
     nodes = []
     for instance in instances:
         name = instance['name']
+        state = instance['state']
         if name in hosts_by_name:
             sge_host = hosts_by_name[name]
             host_dict = sge_host.copy()
@@ -75,8 +76,9 @@ def nodes_tab():
             # If an instance is visible in starcluster listclusters, but not qhost, then it is probably booting up.
             # (or failed to join SGE)
             host_dict = {}
+            state = 'pending'
         host_dict['public_ip'] = instance['public_ip']
-        host_dict['state'] = instance['state']
+        host_dict['state'] = state
         host_dict['type'] = instance['type']
         host_dict['uptime'] = instance['uptime']
         if instance['type'] in aws_static.ondemand_instance_cost:
