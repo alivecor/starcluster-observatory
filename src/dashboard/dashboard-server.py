@@ -38,10 +38,8 @@ def homepage():
     return nodes_tab()
 
 
-@app.route('/jobs_tab.html')
-def jobs_tab():
-    search_query = request.args.get('search')
-    # Get nodes from backend service
+def get_jobs():
+    """Get all queued jobs from backend."""
     result = requests.get('http://%s:%s/qstat' % (args.api_server_host, args.api_server_port))
     jobs = []
     if result:
@@ -51,6 +49,13 @@ def jobs_tab():
             timestamp = int(job['submission_timestamp'])
             dt = datetime.datetime.fromtimestamp(timestamp, tz=timezone)
             job['submission_time'] = dt.strftime('%Y-%m-%d %I:%M:%S %p')
+    return jobs
+
+
+@app.route('/jobs_tab.html')
+def jobs_tab():
+    """Render jobs tab with navigation."""
+    jobs = get_jobs()
     pending_jobs = [j for j in jobs if j['state'] == 'pending']
     running_jobs = [j for j in jobs if j['state'] == 'running']
     return render_template('jobs.html',
@@ -60,10 +65,21 @@ def jobs_tab():
                            running_jobs=len(running_jobs))
 
 
-@app.route('/nodes_tab.html')
-def nodes_tab():
-    search_query = request.args.get('search')
-    # Get hosts from backend service
+@app.route('/jobs_content.html')
+def jobs_content():
+    """Render jobs tab content only, no navigation."""
+    jobs = get_jobs()
+    pending_jobs = [j for j in jobs if j['state'] == 'pending']
+    running_jobs = [j for j in jobs if j['state'] == 'running']
+    return render_template('jobs_content.html',
+                           static_url=static_url,
+                           jobs=jobs,
+                           pending_jobs=len(pending_jobs),
+                           running_jobs=len(running_jobs))
+
+
+def get_nodes_and_cost():
+    """Get list of nodes and total cost from backend."""
     total_cost = 0.0
     sge_hosts_results = requests.get('http://%s:%s/qhost' % (args.api_server_host, args.api_server_port))
     hosts_by_name = {h['name'] : h for h in sge_hosts_results.json() if 'name' in h}
@@ -90,8 +106,25 @@ def nodes_tab():
         if instance['type'] in aws_static.ondemand_instance_cost:
             total_cost += aws_static.ondemand_instance_cost[instance['type']]
         nodes.append(host_dict)
+    return nodes, total_cost
 
+
+@app.route('/nodes_tab.html')
+def nodes_tab():
+    """Render nodes tab."""
+    nodes, total_cost = get_nodes_and_cost()
     return render_template('nodes.html',
+                           static_url=static_url,
+                           hosts=nodes,
+                           host_count=len(nodes),
+                           total_cost=total_cost)
+
+
+@app.route('/nodes_content.html')
+def nodes_content():
+    """Render nodes list content only no navigation."""
+    nodes, total_cost = get_nodes_and_cost()
+    return render_template('nodes_content.html',
                            static_url=static_url,
                            hosts=nodes,
                            host_count=len(nodes),

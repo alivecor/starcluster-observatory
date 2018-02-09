@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-9 col-md-10 main">
+          <h1 class="page-header">Nodes</h1>
+
+          <section class="row text-center placeholders">
+            <div class="col-6 col-sm-3 placeholder">
+              <div>
+                <img src="data:image/gif;base64,R0lGODlhAQABAIABAAJ12AAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle">
+                <div class="centered-in-circle white-overlay-large">{{ host_count }}</div>
+              </div>
+              <h4>Nodes</h4>
+              <div class="text-muted">Running</div>
+            </div>
+            <div class="col-6 col-sm-3 placeholder">
+              <div>
+                <img src="data:image/gif;base64,R0lGODlhAQABAIABAADcgwAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle">
+                <div class="centered-in-circle white-overlay-medium">${{ total_cost }}</div>
+              </div>
+              <h4>Cost/hr</h4>
+              <span class="text-muted">On-demand</span>
+            </div>
+          </section>
+
+          <h2>Nodes</h2>
+
+          <div class="table-responsive">
+            <table id="nodes-table" class="table table-striped" data-toggle="table" data-striped="true" data-search="true" data-mobile-responsive="true">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>State</th>
+                  <th>Type</th>
+                  <th>CPU %</th>
+                  <th>Mem</th>
+                  <th>Uptime</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+{% for host in hosts %}
+                <tr>
+                  <td>{{ host.name }}</td>
+                  <td>{{ host.state }}</td>
+                  <td>{{ host.type }}</td>
+                  <td>{{ host.load_avg }}</td>
+                  <td>{{ host.mem_used }} / {{ host.mem_total }}</td>
+                  <td>{{ host.uptime }}</td>
+                  <td>
+{% if not 'master' in host.name %}
+                    <a href="remove_node?alias={{ host.name }}" class="btn btn-large btn-danger" data-toggle="confirmation"
+                       data-singleton="true" data-title="Terminate Instance?">
+                      Terminate
+                    </a>
+{% endif %}
+                  </td>
+                </tr>
+{% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+              <p></p>
+              <!-- <div id="popover1" class="col-sm-12 col-xs-12 col-md-9"> -->
+                  <a id="launch-instance-button" class="btn btn-primary" href="javascript:;" data-original-title="Launch Instance" aria-describedby="popover972114">Launch Instance</a>
+                  <div class="hide" id="instance-types-table-container">
+                      <!-- Populated by launch_popover AJAX request -->
+                  </div>
+              <!-- </div> -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript" src="{{ static_url('nodes.js') }}"></script>
+{% endblock %}
