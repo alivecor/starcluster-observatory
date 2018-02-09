@@ -1,40 +1,35 @@
-<!-- HTML content of launch instance popover -->
-<div class="col-sm-2 " style="width:250px;">
-    <table class="table table-striped" data-striped="true">
-        <thead>
-            <tr>
-                <th>Instance type</th>
-                <th>On-demand</th>
-                <th>Current</th>
-                <th>30 Day Average</th>
-                <th>30 Day Max</th>
-            </tr>
-        </thead>
+<!-- HTML content of launch instance table -->
+<div class="row">
+    <div class="col-sm-2">
+        <table id="instance-types-table" class="table table-striped" data-striped="true">
+            <thead>
+                <tr>
+                    <th data-field="state" data-radio="true"></th>
+                    <th data-field="configuration">Configuration</th>
+                    <th data-field="instance_type">Type</th>
+                    <th data-field="on_demand">Cost</th>
+                    <th data-field="current">Spot</th>
+                </tr>
+            </thead>
+            <tbody>
 {% for price in prices %}
-        <tr>
-            <td>${{ price.instance_type }}</td>
-            <td>${{ price.on_demand }}</td>
-            <td>${{ price.current }}</td>
-            <td>${{ price.average }}</td>
-            <td>${{ price.max }}</td>
-        </tr>
+                <tr>
+                    <td>
+                        <input type="radio" name="launchConfigGroup" {% if price.first %}checked{% endif %}>
+                    </td>
+                    <td>{{ price.configuration }}</td>
+                    <td>{{ price.instance_type }}</td>
+                    <td>${{ price.on_demand }}</td>
+                    <td>${{ price.current }}</td>
+                </tr>
 {% endfor %}
-    </table>
+            </tbody>
+        </table>
+    </div>
 </div>
-<div class="clearfix col-sm-10" style="margin:8px 0;">
-    <button type="button" class="btn btn-success btn-launch">Launch</button>
-    <button type="button" class="btn btn-cancel btn-cancel-option">Cancel</button>
+<div class="row">
+    <div class="col-sm-10">
+        <button type="button" class="btn btn-success btn-launch">Launch</button>
+        <button type="button" class="btn btn-danger btn-cancel-option">Cancel</button>
+    </div>
 </div>
-<!--
-<div class="btn-group" data-toggle="buttons">
-  <label class="btn btn-primary active">
-    <input type="radio" name="options" id="option1" autocomplete="off" checked> Radio 1 (preselected)
-  </label>
-  <label class="btn btn-primary">
-    <input type="radio" name="options" id="option2" autocomplete="off"> Radio 2
-  </label>
-  <label class="btn btn-primary">
-    <input type="radio" name="options" id="option3" autocomplete="off"> Radio 3
-  </label>
-</div>
--->

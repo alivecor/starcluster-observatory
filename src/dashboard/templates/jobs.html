@@ -89,12 +89,5 @@
         </div>
       </div>
     </div>
-    <script type="text/javascript">
-        <!-- Enable bootstrap confirmation plugin -->
-        $('[data-toggle="popover"]').popover();
-        $('[data-toggle="confirmation"]').confirmation();
-        $('#jobs-table').on('all.bs.table', function (e, name, args) {
-            $('[data-toggle="confirmation"]').confirmation();
-        });
-    </script>
+    <script type="text/javascript" src="{{ static_url('jobs.js') }}"></script>
 {% endblock %}

@@ -124,3 +124,10 @@ body {
     color: white;
     font-size: 4em;
 }
+
+/*
+ * Launch instance popover width.
+ */
+.popover {
+    max-width:390px;
+}

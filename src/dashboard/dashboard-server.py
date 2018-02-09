@@ -111,13 +111,24 @@ def remove_node():
 
 @app.route('/launch_popover')
 def launch_popover():
-    """Returns HTML content to populate the launch new instance popover."""
+    """Returns HTML content to populate the body of launch new instance popover."""
     prices_results = requests.get('http://%s:%s/spot_history?instance_types=%s' % (
         args.api_server_host, args.api_server_port, args.instance_types
     ))
     results = prices_results.json()
     prices = results['prices']
-    return render_template('launch_popover.html', prices=prices])
+    first = True
+    for price in prices:
+        price['first'] = first
+        if first:
+            first = False
+        # Add to price dict the on-demand cost and configuration.
+        instance_type = price['instance_type']
+        if instance_type in aws_static.ondemand_instance_cost:
+            price['on_demand'] = aws_static.ondemand_instance_cost[instance_type]
+        if instance_type in aws_static.instance_types:
+            price['configuration'] = aws_static.instance_types[instance_type]
+    return render_template('launch_popover.html', prices=prices)
 
 
 @app.route('/cancel_job')
