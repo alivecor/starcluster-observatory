@@ -139,7 +139,7 @@ def add_node():
     if instance_type:
         request_url = request_url + '?instance_type=%s' % instance_type
     add_result = requests.get(request_url)
-    return redirect(os.path.join(url_prefix, 'nodes_tab.html'), code=302)
+    return redirect(os.path.join(url_prefix, 'nodes_content.html'), code=302)
 
 
 @app.route('/remove_node')
@@ -147,7 +147,7 @@ def remove_node():
     alias = request.args.get('alias')
     remove_result = requests.get('http://%s:%s/nodes/%s/remove' % (args.api_server_host, args.api_server_port, alias))
     # Remove specified node
-    return redirect(os.path.join(url_prefix, 'nodes_tab.html'), code=302)
+    return redirect(os.path.join(url_prefix, 'nodes_content.html'), code=302)
 
 
 @app.route('/launch_popover')
@@ -177,7 +177,7 @@ def cancel_job():
     # Cancel the specified job
     jid = request.args.get('jid')
     cancel_result = requests.get('http://%s:%s/jobs/%s/cancel' % (args.api_server_host, args.api_server_port, jid))
-    return redirect(os.path.join(url_prefix, 'jobs_tab.html'), code=302)
+    return redirect(os.path.join(url_prefix, 'jobs_content.html'), code=302)
 
 
 if __name__ == '__main__':
