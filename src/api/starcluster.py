@@ -145,8 +145,10 @@ def add_node(cluster_name, instance_type=None, ami=None, spot_bid=None):
         instance_type (string) - The type of instance i.e. p3.2xlarge.
         ami (string) - The id of the amazon machine image to launch.
         spot_bid (string) - If specified, launch a spot instance at the this bid price.  Otherwise, launch an on-demand instance.
+
+    Returns:
+        subprocess.Popen
     """
-    command = STARCLUSTER_PATH
     command_args = [STARCLUSTER_PATH, '-c', CONFIG_PATH, 'addnode']
     if not instance_type is None:
         command_args.append('-I')
@@ -158,14 +160,22 @@ def add_node(cluster_name, instance_type=None, ami=None, spot_bid=None):
         command_args.append('-b')
         command_args.append(spot_bid)
     command_args.append(_filter_cluster_name(cluster_name))
-    os.spawnv(os.P_NOWAIT, command, command_args)
+    # print('Detaching: ' + str(command_args))
+    return subprocess.Popen(command_args)
 
 
 def remove_node(cluster_name, node_alias):
     """Removes the specified node from cluster.
     Note: Terminating a new node node may take several minutes, but remove_node returns
     immediately after launching the subprocess and does not wait.
+
+    Args:
+        cluster_name (string) - The name of the cluster
+        node_alias (string) - The alias of the node to remove
+
+    Returns:
+        subprocess.Popen
     """
-    command = STARCLUSTER_PATH
     command_args = [STARCLUSTER_PATH, '-c', CONFIG_PATH, 'removenode', '--confirm', '-f', '-a', node_alias, _filter_cluster_name(cluster_name)]
-    os.spawnv(os.P_NOWAIT, command, command_args)
+    # print('Detaching: ' + str(command_args))
+    return subprocess.Popen(command_args)
