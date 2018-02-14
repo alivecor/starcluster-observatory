@@ -35,6 +35,7 @@
                   <th>Type</th>
                   <th>CPU %</th>
                   <th>Mem</th>
+                  <th>Public IP</th>
                   <th>Uptime</th>
                   <th></th>
                 </tr>
@@ -47,6 +48,7 @@
                   <td>{{ host.type }}</td>
                   <td>{{ host.load_avg }}</td>
                   <td>{{ host.mem_used }} / {{ host.mem_total }}</td>
+                  <td>{{ host.public_ip }}</td>
                   <td>{{ host.uptime }}</td>
                   <td>
 {% if not 'master' in host.name %}
