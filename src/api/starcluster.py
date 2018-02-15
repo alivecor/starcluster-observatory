@@ -1,10 +1,14 @@
 """Wrapper for the starcluster command."""
 import re
 import subprocess
+import subprocess_pool
 
 
 STARCLUSTER_PATH = '/usr/local/bin/starcluster'
 CONFIG_PATH = '/etc/starcluster/config'
+
+
+subprocesses = subprocess_pool.SubprocessPool()
 
 
 def _starcluster_command():
