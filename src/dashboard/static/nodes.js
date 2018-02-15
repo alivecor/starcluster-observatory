@@ -6,7 +6,7 @@ $('#nodes-table').on('all.bs.table', function (e, name, args) {
 });
 
 $(function() {
-    // Populate launch instance popover
+    // Populate launch instance popover.
     $.ajax({
         url: '/observatory/launch_popover',
         type: 'get',
@@ -19,6 +19,19 @@ $(function() {
             console.log('Failed to populate launch panel.')
         }
     });
+
+    // Populate alerts.
+    $.ajax({
+        url: '/observatory/nodes_alerts',
+        type: 'get',
+        success: function(response) {
+            $('#alerts-container').html(response);
+        },
+        error: function(xhr) {
+            console.log('Failed to populate alerts.')
+        }
+    });
+
 });
 
 $(window).bind('ConfigurePopover', function(e, data) {

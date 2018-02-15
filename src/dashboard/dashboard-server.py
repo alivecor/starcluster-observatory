@@ -131,6 +131,15 @@ def nodes_content():
                            total_cost=total_cost)
 
 
+@app.route('/nodes_alerts.html')
+def nodes_alerts():
+    """Render alerts for nodes page."""
+    alerts = [dict(
+        message= 'test alert: an error happened'
+    )]
+    return render_template('alerts.html', alerts=alerts)
+
+
 @app.route('/add_node')
 def add_node():
     instance_type = request.args.get('instance_type')

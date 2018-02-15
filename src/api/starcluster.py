@@ -164,7 +164,7 @@ def add_node(cluster_name, instance_type=None, ami=None, spot_bid=None):
         command_args.append(spot_bid)
     command_args.append(_filter_cluster_name(cluster_name))
     # print('Detaching: ' + str(command_args))
-    return subprocess.Popen(command_args)
+    subprocesses.run_command(command_args, 'add %s' % instance_type)
 
 
 def remove_node(cluster_name, node_alias):
@@ -181,4 +181,4 @@ def remove_node(cluster_name, node_alias):
     """
     command_args = [STARCLUSTER_PATH, '-c', CONFIG_PATH, 'removenode', '--confirm', '-f', '-a', node_alias, _filter_cluster_name(cluster_name)]
     # print('Detaching: ' + str(command_args))
-    return subprocess.Popen(command_args)
+    subprocesses.run_command(command_args, 'remove node %s' % node_alias)
