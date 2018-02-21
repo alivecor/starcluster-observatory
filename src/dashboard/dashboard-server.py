@@ -30,11 +30,6 @@ app = Flask(__name__)
 
 alert_queue = AlertQueue()
 
-alert_queue.add_alert(Alert.ERROR, 'Error', 'An error happened')
-alert_queue.add_alert(Alert.WARNING, 'Warning', 'A warning')
-alert_queue.add_alert(Alert.INFO, 'Info', 'Informational message')
-alert_queue.add_alert(Alert.SUCCESS, 'Success', 'Success message')
-
 
 url_prefix = '/observatory'
 def static_url(path):
