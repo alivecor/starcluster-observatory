@@ -35,6 +35,13 @@ class Alert:
         self.message = message
         self.expiration_ts = expiration_ts
 
+    def expired_at_time(self, t):
+        """Is alert expired."""
+        if self.expiration_ts is None:
+            return False
+        else:
+            return self.expiration_ts < t
+
 
 class AlertQueue:
     def __init__(self):
@@ -42,10 +49,15 @@ class AlertQueue:
         self._alerts = []
 
     def remove_expired(self):
-        """Removes the first expired alert, if any"""
+        """Removes the first expired alert, if any."""
+        now = time.time()
+        index = _index_matching_predicate(self._alerts, lambda a: a.expired_at_time(now))
+        if not index is None:
+            del self._alerts[index]
 
     def get_alerts(self):
         """Get list of alerts."""
+        self.remove_expired()
         return self._alerts
 
     def add_alert(self, type, title, message, expiration_seconds=None):

@@ -155,6 +155,7 @@ def add_node():
     if instance_type:
         request_url = request_url + '?instance_type=%s' % instance_type
     add_result = requests.get(request_url)
+    alert_queue.add_alert(Alert.INFO, 'Instance Launching', instance_type, 60)
     return redirect(os.path.join(url_prefix, 'nodes_content.html'), code=302)
 
 
@@ -163,6 +164,7 @@ def remove_node():
     alias = request.args.get('alias')
     remove_result = requests.get('http://%s:%s/nodes/%s/remove' % (args.api_server_host, args.api_server_port, alias))
     # Remove specified node
+    alert_queue.add_alert(Alert.INFO, 'Shutting Down', alias, 60)
     return redirect(os.path.join(url_prefix, 'nodes_content.html'), code=302)
 
 
