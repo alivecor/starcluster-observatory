@@ -11,6 +11,7 @@ import re
 import requests
 import subprocess
 
+from alert_queue import *
 import aws_static
 
 
@@ -26,6 +27,9 @@ args = parser.parse_args()
 timezone = pytz.timezone('America/Los_Angeles')
 
 app = Flask(__name__)
+
+alerts = AlertQueue()
+
 
 url_prefix = '/observatory'
 def static_url(path):
@@ -131,11 +135,12 @@ def nodes_content():
                            total_cost=total_cost)
 
 
-@app.route('/nodes_alerts.html')
+@app.route('/nodes_alerts')
 def nodes_alerts():
     """Render alerts for nodes page."""
     alerts = [dict(
-        message= 'test alert: an error happened'
+        message= 'test alert: an error happened',
+        type='error',
     )]
     return render_template('alerts.html', alerts=alerts)
 
@@ -187,6 +192,14 @@ def cancel_job():
     jid = request.args.get('jid')
     cancel_result = requests.get('http://%s:%s/jobs/%s/cancel' % (args.api_server_host, args.api_server_port, jid))
     return redirect(os.path.join(url_prefix, 'jobs_content.html'), code=302)
+
+
+@app.route('/cancel_alert')
+def clear_alert():
+    """Close the specified alert.  Returns the updated content of the alerts window."""
+    alert_id = request.args.get('alert_id')
+    alerts.remove_alert(alert_id)
+    return nodes_alerts()
 
 
 if __name__ == '__main__':
