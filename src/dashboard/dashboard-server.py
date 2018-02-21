@@ -28,7 +28,12 @@ timezone = pytz.timezone('America/Los_Angeles')
 
 app = Flask(__name__)
 
-alerts = AlertQueue()
+alert_queue = AlertQueue()
+
+alert_queue.add_alert(Alert.ERROR, 'Error', 'An error happened')
+alert_queue.add_alert(Alert.WARNING, 'Warning', 'A warning')
+alert_queue.add_alert(Alert.INFO, 'Info', 'Informational message')
+alert_queue.add_alert(Alert.SUCCESS, 'Success', 'Success message')
 
 
 url_prefix = '/observatory'
@@ -138,10 +143,7 @@ def nodes_content():
 @app.route('/nodes_alerts')
 def nodes_alerts():
     """Render alerts for nodes page."""
-    alerts = [dict(
-        message= 'test alert: an error happened',
-        type='error',
-    )]
+    alerts = alert_queue.get_alerts()
     return render_template('alerts.html', alerts=alerts)
 
 
@@ -194,11 +196,11 @@ def cancel_job():
     return redirect(os.path.join(url_prefix, 'jobs_content.html'), code=302)
 
 
-@app.route('/cancel_alert')
+@app.route('/clear_alert')
 def clear_alert():
     """Close the specified alert.  Returns the updated content of the alerts window."""
     alert_id = request.args.get('alert_id')
-    alerts.remove_alert(alert_id)
+    alert_queue.remove_alert(alert_id)
     return nodes_alerts()
 
 

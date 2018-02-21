@@ -5,6 +5,31 @@ $('#nodes-table').on('all.bs.table', function (e, name, args) {
     $('[data-toggle="confirmation"]').confirmation();
 });
 
+
+function handle_alert_closed(alert_id) {
+    $.ajax({
+        url: '/observatory/clear_alert?alert_id=' + alert_id,
+        type: 'get',
+        success: function(response) {
+            $('#alerts-container').html(response);
+            add_alert_handlers();
+        },
+        error: function(xhr) {
+            console.log('Failed to populate alerts.');
+        }
+    });
+}
+
+
+function add_alert_handlers() {
+    console.log('add_alert_handlers');
+    $('.alert').on('closed.bs.alert', function (e) {
+        alert_id = $(this).data('alert-id')
+        handle_alert_closed(alert_id);
+    });
+}
+
+
 $(function() {
     // Populate launch instance popover.
     $.ajax({
@@ -21,18 +46,24 @@ $(function() {
     });
 
     // Populate alerts.
-    $.ajax({
-        url: '/observatory/nodes_alerts',
-        type: 'get',
-        success: function(response) {
-            $('#alerts-container').html(response);
-        },
-        error: function(xhr) {
-            console.log('Failed to populate alerts.')
-        }
-    });
+    function load_alerts() {
+        $.ajax({
+            url: '/observatory/nodes_alerts',
+            type: 'get',
+            success: function(response) {
+                $('#alerts-container').html(response);
+                add_alert_handlers();
+            },
+            error: function(xhr) {
+                console.log('Failed to populate alerts.')
+            }
+        });
+    }
 
+    load_alerts()
+    setTimeout(load_alerts, 30000)
 });
+
 
 $(window).bind('ConfigurePopover', function(e, data) {
     $('#launch-instance-button').popover({
@@ -66,4 +97,3 @@ $(window).bind('ConfigurePopover', function(e, data) {
         }
     });
 });
-

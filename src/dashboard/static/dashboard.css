@@ -131,3 +131,7 @@ body {
 .popover {
     max-width:390px;
 }
+
+.alerts-container {
+    width: 50%;
+}

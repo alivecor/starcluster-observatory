@@ -1,4 +1,13 @@
 <!-- Renders a list of alerts -->
 {% for alert in alerts %}
-<div class="alert alert-danger fade in">{{ alert.message }}</div>
+<div class="alert fade in alert-dismissable
+           {% if alert.type == 'success' %}alert-success{% endif %}
+           {% if alert.type == 'info' %}alert-info{% endif %}
+           {% if alert.type == 'warning' %}alert-warning{% endif %}
+           {% if alert.type == 'error' %}alert-danger{% endif %}
+           ",  data-alert-id="{{ alert.alert_id }}">
+    <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
+    <strong>{{ alert.title }}</strong>
+    {{ alert.message }}
+</div>
 {% endfor %}
