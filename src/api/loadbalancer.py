@@ -55,12 +55,14 @@ class LoadBalancer:
             time.sleep(1)
 
     def add_host(self, type):
+        """Add new node of specified type to cluster."""
         try:
             starcluster.add_node(self.cluster_name, instance_type=type)
         except subprocess.CalledProcessError as e:
             print('Error adding new %s instance: %s' % (type, str(e)))
 
     def remove_host(self, alias):
+        """Removes host with specified alias."""
         del self._idle_hosts[alias]
         try:
             starcluster.remove_node(self.cluster_name, alias)
@@ -68,13 +70,14 @@ class LoadBalancer:
             print('Error auto-removing idle host %s: %s' % (alias, str(e)))
 
     def _poll(self):
+        """Internal method called periodically to poll the cluster state."""
         hosts = sge.qhost()
         queued_jobs, pending_jobs = sge.qstat()
         self.check_increase_capacity(hosts, pending_jobs)
         self.check_remove_idle(hosts, queued_jobs)
 
     def check_increase_capacity(self, hosts, pending_jobs):
-        """Check if we have pending jobs, increase capacity accordingly"""
+        """Check if we have pending jobs, increase capacity accordingly."""
         pending_cpu_jobs = [j for j in pending_jobs if j['queue_name'] != 'gpu.q']
         pending_gpu_jobs = [j for j in pending_jobs if j['queue_name'] == 'gpu.q']
         # Give priority to GPU jobs, since that is what is most likely used for training.

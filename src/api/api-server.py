@@ -44,6 +44,17 @@ def cluster_status():
     })
 
 
+@app.route('/get_errors')
+def get_errors():
+    """Get any pending errors from starcluster background processes."""
+    starcluster.subprocesses.poll()
+    errors = starcluster.subprocesses.pop_errors()
+    return jsonify({
+        'status': 'ok',
+        'errors': errors
+    })
+
+
 @app.route('/qhost')
 def qhost():
     """Returns SGE execution hosts."""
