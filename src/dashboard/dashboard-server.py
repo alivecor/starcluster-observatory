@@ -118,7 +118,7 @@ def get_nodes_and_cost():
             host_dict = {}
             state = 'pending'
         if name in jobs_by_host:
-            host_dict['job_ids'] = ','.join(jobs_by_host[name])
+            host_dict['job_ids'] = ','.join([str(jid) for jid in jobs_by_host[name]])
         else:
             host_dict['job_ids'] = ''
         host_dict['public_ip'] = instance['public_ip']
