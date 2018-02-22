@@ -121,7 +121,7 @@ def nodes_tab():
                            static_url=static_url,
                            hosts=nodes,
                            host_count=len(nodes),
-                           total_cost=total_cost)
+                           total_cost='%.2f' % total_cost)
 
 
 @app.route('/nodes_content.html')
@@ -132,7 +132,7 @@ def nodes_content():
                            static_url=static_url,
                            hosts=nodes,
                            host_count=len(nodes),
-                           total_cost=total_cost)
+                           total_cost='%.2f' % total_cost)
 
 
 @app.route('/nodes_alerts')
