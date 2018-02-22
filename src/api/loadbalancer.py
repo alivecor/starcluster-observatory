@@ -108,7 +108,11 @@ class LoadBalancer:
         for host in idle_host_aliases:
             if host not in idle_hosts:
                 idle_hosts[host] = time_now
-        # Check if any hosts have been idle longer than idle_timeout
+        # Remove hosts from idle list that have been removed from SGE.
+        for host in idle_hosts:
+            if host not in idle_host_aliases:
+                del idle_hosts[host]
+        # Check if any hosts have been idle longer than idle_timeout.
         hosts_to_remove = []
         idle_times = []
         for host, start_time in idle_hosts.items():

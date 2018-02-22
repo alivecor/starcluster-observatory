@@ -20,7 +20,7 @@ parser.add_argument('--host_ip', default='0.0.0.0', type=str, help='IP address o
 parser.add_argument('--port', default=6360, type=int, help='Port to listen on.')
 parser.add_argument('--api_server_host', default='127.0.0.1', type=str, help='IP address of the backend.')
 parser.add_argument('--api_server_port', default=6361, type=int, help='Port to use to connect to API server.')
-parser.add_argument('--instance_types', default='p2.xlarge,p3.2xlarge', type=str, help='Instance types user is allowed to launch.')
+parser.add_argument('--instance_types', default='c4.large,p2.xlarge,p3.2xlarge', type=str, help='Instance types user is allowed to launch.')
 args = parser.parse_args()
 
 # TODO: make timezone a parameter or infer from region.
