@@ -14,7 +14,7 @@ class LoadBalancer:
                  max_capacity,
                  cpu_type='c4.xlarge',
                  gpu_type='p2.xlarge',
-                 idle_timeout=20 * 60,
+                 idle_timeout=40 * 60,
                  polling_interval=5 * 60):
         """Constructor.
 
