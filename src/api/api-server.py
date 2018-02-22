@@ -25,8 +25,8 @@ app = Flask(__name__)
 
 lb = loadbalancer.LoadBalancer(args.cluster_name,
                                args.max_capacity,
-                               cpu_type='c4.xlarge',
-                               gpu_type='p3.2xlarge',
+                               cpu_type='c4.xlarge',   # Unforunate hard-coded constants.
+                               gpu_type='p3.2xlarge',  # TODO: parameterize these in config.
                                idle_timeout=args.idle_timeout * 60,
                                polling_interval=5 * 60)
 
@@ -41,6 +41,17 @@ def cluster_status():
         'status': 'ok',
         'uptime': uptime,
         'nodes': nodes
+    })
+
+
+@app.route('/get_errors')
+def get_errors():
+    """Get any pending errors from starcluster background processes."""
+    starcluster.subprocesses.poll()
+    errors = starcluster.subprocesses.pop_errors()
+    return jsonify({
+        'status': 'ok',
+        'errors': errors
     })
 
 

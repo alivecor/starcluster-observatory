@@ -11,6 +11,7 @@ import re
 import requests
 import subprocess
 
+from alert_queue import *
 import aws_static
 
 
@@ -19,13 +20,16 @@ parser.add_argument('--host_ip', default='0.0.0.0', type=str, help='IP address o
 parser.add_argument('--port', default=6360, type=int, help='Port to listen on.')
 parser.add_argument('--api_server_host', default='127.0.0.1', type=str, help='IP address of the backend.')
 parser.add_argument('--api_server_port', default=6361, type=int, help='Port to use to connect to API server.')
-parser.add_argument('--instance_types', default='p2.xlarge,p3.2xlarge', type=str, help='Instance types user is allowed to launch.')
+parser.add_argument('--instance_types', default='c4.large,p2.xlarge,p3.2xlarge', type=str, help='Instance types user is allowed to launch.')
 args = parser.parse_args()
 
 # TODO: make timezone a parameter or infer from region.
 timezone = pytz.timezone('America/Los_Angeles')
 
 app = Flask(__name__)
+
+alert_queue = AlertQueue()
+
 
 url_prefix = '/observatory'
 def static_url(path):
@@ -131,6 +135,13 @@ def nodes_content():
                            total_cost=total_cost)
 
 
+@app.route('/nodes_alerts')
+def nodes_alerts():
+    """Render alerts for nodes page."""
+    alerts = alert_queue.get_alerts()
+    return render_template('alerts.html', alerts=alerts)
+
+
 @app.route('/add_node')
 def add_node():
     instance_type = request.args.get('instance_type')
@@ -139,6 +150,7 @@ def add_node():
     if instance_type:
         request_url = request_url + '?instance_type=%s' % instance_type
     add_result = requests.get(request_url)
+    alert_queue.add_alert(Alert.INFO, 'Instance Launching', instance_type, 60)
     return redirect(os.path.join(url_prefix, 'nodes_content.html'), code=302)
 
 
@@ -147,6 +159,7 @@ def remove_node():
     alias = request.args.get('alias')
     remove_result = requests.get('http://%s:%s/nodes/%s/remove' % (args.api_server_host, args.api_server_port, alias))
     # Remove specified node
+    alert_queue.add_alert(Alert.INFO, 'Shutting Down', alias, 60)
     return redirect(os.path.join(url_prefix, 'nodes_content.html'), code=302)
 
 
@@ -178,6 +191,14 @@ def cancel_job():
     jid = request.args.get('jid')
     cancel_result = requests.get('http://%s:%s/jobs/%s/cancel' % (args.api_server_host, args.api_server_port, jid))
     return redirect(os.path.join(url_prefix, 'jobs_content.html'), code=302)
+
+
+@app.route('/clear_alert')
+def clear_alert():
+    """Close the specified alert.  Returns the updated content of the alerts window."""
+    alert_id = request.args.get('alert_id')
+    alert_queue.remove_alert(alert_id)
+    return nodes_alerts()
 
 
 if __name__ == '__main__':
