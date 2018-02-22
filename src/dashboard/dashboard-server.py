@@ -85,11 +85,25 @@ def jobs_content():
 def get_nodes_and_cost():
     """Get list of nodes and total cost from backend."""
     total_cost = 0.0
+    # Get host list from SGE.
     sge_hosts_results = requests.get('http://%s:%s/qhost' % (args.api_server_host, args.api_server_port))
     hosts_by_name = {h['name'] : h for h in sge_hosts_results.json() if 'name' in h}
 
+    # Get instance list from starcluster, because SGE host list doesn't show failed or pending nodes.
     instances_results = requests.get('http://%s:%s/instances' % (args.api_server_host, args.api_server_port))
     instances = instances_results.json()
+
+    # Get job list from SGE, so we can show which jobs are running on each host.
+    jobs = get_jobs()
+    running_jobs = [j for j in jobs if j['state'] == 'running']
+    jobs_by_host = {}
+    for job in running_jobs:
+        job_host = job['queue_name'].split('@')[-1]
+        job_id = job['job_id']
+        if job_host in jobs_by_host:
+            jobs_by_host[job_host].append(job_id)
+        else:
+            jobs_by_host[job_host] = [job_id]
 
     nodes = []
     for instance in instances:
@@ -103,6 +117,10 @@ def get_nodes_and_cost():
             # (or failed to join SGE)
             host_dict = {}
             state = 'pending'
+        if name in jobs_by_host:
+            host_dict['job_ids'] = ','.join(jobs_by_host[name])
+        else:
+            host_dict['job_ids'] = ''
         host_dict['public_ip'] = instance['public_ip']
         host_dict['state'] = state
         host_dict['type'] = instance['type']

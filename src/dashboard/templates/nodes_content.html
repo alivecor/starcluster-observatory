@@ -33,6 +33,7 @@
                   <th>Name</th>
                   <th>State</th>
                   <th>Type</th>
+                  <th>Jobs</th>
                   <th>CPU %</th>
                   <th>Mem</th>
                   <th>Public IP</th>
@@ -46,6 +47,7 @@
                   <td>{{ host.name }}</td>
                   <td>{{ host.state }}</td>
                   <td>{{ host.type }}</td>
+                  <td>{{ host.job_ids }}</td>
                   <td>{{ host.load_avg }}</td>
                   <td>{{ host.mem_used }} / {{ host.mem_total }}</td>
                   <td>{{ host.public_ip }}</td>
