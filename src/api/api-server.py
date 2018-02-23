@@ -15,7 +15,7 @@ parser.add_argument('--host_ip', default='0.0.0.0', type=str, help='IP address o
 parser.add_argument('--port', default=6361, type=int, help='Port to listen on.')
 parser.add_argument('--cluster_name', default='dev', type=str, help='Name of the cluster to manage.')
 parser.add_argument('--starcluster_config', default='/etc/starcluster/config', type=str, help='Path to starcluster config file.')
-parser.add_argument('--idle_timeout', default=40, type=int, help='Shut down nodes if idle longer than this (minutes).')
+parser.add_argument('--idle_timeout', default=120, type=int, help='Shut down nodes if idle longer than this (minutes).')
 parser.add_argument('--polling_interval', default=5, type=int, help='Polling interval for load balancer (minutes).')
 parser.add_argument('--max_capacity', default=16, type=int, help='Maximum number of nodes to allow.')
 
