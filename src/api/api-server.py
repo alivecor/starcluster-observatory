@@ -16,6 +16,7 @@ parser.add_argument('--port', default=6361, type=int, help='Port to listen on.')
 parser.add_argument('--cluster_name', default='dev', type=str, help='Name of the cluster to manage.')
 parser.add_argument('--starcluster_config', default='/etc/starcluster/config', type=str, help='Path to starcluster config file.')
 parser.add_argument('--idle_timeout', default=40, type=int, help='Shut down nodes if idle longer than this (minutes).')
+parser.add_argument('--polling_interval', default=5, type=int, help='Polling interval for load balancer (minutes).')
 parser.add_argument('--max_capacity', default=16, type=int, help='Maximum number of nodes to allow.')
 
 args = parser.parse_args()
@@ -28,7 +29,7 @@ lb = loadbalancer.LoadBalancer(args.cluster_name,
                                cpu_type='c4.xlarge',   # Unforunate hard-coded constants.
                                gpu_type='p3.2xlarge',  # TODO: parameterize these in config.
                                idle_timeout=args.idle_timeout * 60,
-                               polling_interval=5 * 60)
+                               polling_interval=args.polling_interval * 60)
 
 
 @app.route('/status')
