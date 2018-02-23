@@ -125,9 +125,8 @@ def get_nodes_and_cost():
         host_dict['state'] = state
         host_dict['type'] = instance['type']
         host_dict['uptime'] = instance['uptime']
-        load_avg = host_dict['load_avg']
-        if not load_avg is None:
-            load_pct = float(load_avg) * 100
+        if 'load_avg' in host_dict:
+            load_pct = float(host_dict['load_avg']) * 100
             host_dict['load_avg'] = int(load_pct)
         if instance['type'] in aws_static.ondemand_instance_cost:
             total_cost += aws_static.ondemand_instance_cost[instance['type']]
