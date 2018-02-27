@@ -144,6 +144,7 @@ def cluster_add_node():
 
 @app.route('/nodes/<node_alias>/remove')
 def cluster_remove_node(node_alias):
+    lb.will_remove_host(node_alias)
     try:
         starcluster.remove_node(args.cluster_name, node_alias)
     except subprocess.CalledProcessError as e:

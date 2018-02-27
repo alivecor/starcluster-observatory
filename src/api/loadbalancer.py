@@ -48,22 +48,27 @@ class LoadBalancer:
         self.polling = False
         self.polling_thread = None
 
+    def will_remove_host(self, alias):
+        """Inform the load balancer that a specified host will be removed."""
+        if alias in self._idle_hosts:
+            del self._idle_hosts[alias]
+
     def _run_schedule(self):
         """Run loop for the background task scheduler thread."""
         while self.polling:
             schedule.run_pending()
             time.sleep(1)
 
-    def add_host(self, type):
+    def _add_host(self, type):
         """Add new node of specified type to cluster."""
         try:
             starcluster.add_node(self.cluster_name, instance_type=type)
         except subprocess.CalledProcessError as e:
             print('Error adding new %s instance: %s' % (type, str(e)))
 
-    def remove_host(self, alias):
+    def _remove_host(self, alias):
         """Removes host with specified alias."""
-        del self._idle_hosts[alias]
+        self.will_remove_host(alias)
         try:
             starcluster.remove_node(self.cluster_name, alias)
         except subprocess.CalledProcessError as e:
@@ -83,10 +88,10 @@ class LoadBalancer:
         # Give priority to GPU jobs, since that is what is most likely used for training.
         if pending_gpu_jobs:
             print('LoadBalancer: Launching new GPU node with %d pending jobs on gpu.q' % len(pending_gpu_jobs))
-            self.add_host(self.gpu_type)
+            self._add_host(self.gpu_type)
         elif pending_cpu_jobs:
             print('LoadBalancer: Launching new CPU node with %d pending cpu jobs' % len(pending_cpu_jobs))
-            self.add_host(self.gpu_type)
+            self._add_host(self.gpu_type)
 
     def check_remove_idle(self, hosts, queued_jobs):
         """Check for idle nodes, remove them if confirmed idle for longer than our idle timeout."""
@@ -97,12 +102,14 @@ class LoadBalancer:
         host_names = set([h['name'] for h in hosts if not 'master' in ['name']])
         # Get hosts with running jobs.
         busy_hosts = set([j['queue_name'].split('@')[1] for j in queued_jobs])
-        # Remove hosts with jobs from idle list
+        # Remove hosts from idle list which have taken on jobs.
+        # print('busy_hosts :' + str(busy_hosts))
         for busy_host in busy_hosts:
             if busy_host in idle_hosts:
                 del idle_hosts[busy_host]
         # Add hosts with no jobs to idle list
         idle_host_aliases = host_names.difference(busy_hosts)
+        # print('idle_host_aliases :' + str(idle_host_aliases))
         for host in idle_host_aliases:
             if host not in idle_hosts:
                 idle_hosts[host] = time_now
@@ -124,4 +131,4 @@ class LoadBalancer:
             idle_time = idle_times[index]
             # Remove one host
             print('LoadBalancer: Removing node %s which was idle for %.1f minutes' % (alias, idle_time))
-            self.remove_host(alias)
+            self._remove_host(alias)
