@@ -91,7 +91,7 @@ def instances():
     # Find instance of our cluster.
     cluster = next((c for c in clusters if c['name'] == args.cluster_name), None)
     node_aliases = [node['alias'] for node in cluster['nodes']]
-    cluster_instances = [instances_by_alias[a] for a in node_aliases]
+    cluster_instances = [instances_by_alias[a] for a in node_aliases if a in instances_by_alias]
     return jsonify(cluster_instances)
 
 
