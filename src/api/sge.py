@@ -66,11 +66,23 @@ def qstat_job_details(jid, state=None, queue_name=None):
     job_mail_list = job_info_element.find('JB_mail_list')[0]
     stdout_path_list = job_info_element.find('JB_stdout_path_list')
     stderr_path_list = job_info_element.find('JB_stderr_path_list')
+    hard_queue_list = job_info_element.find('JB_hard_queue_list')
+    destination_ident_list = hard_queue_list.find('destin_ident_list')
+    qr_name = destination_ident_list[0]
+    predecessors = []
+    predecessor_list = job_info_element.find('JB_jid_predecessor_list')
+    if not predecessor_list is None:
+        job_predecessors = predecessor_list.find('job_predecessors')
+        if not job_predecessors is None:
+            for predecessor in job_predecessors:
+                predecessors.append(int(predecessor.text))
     job_details = {
         'job_id': int(job_info_element.find('JB_job_number').text),
         'owner': job_info_element.find('JB_owner').text,
         'name': job_info_element.find('JB_job_name').text,
         'executable': job_info_element.find('JB_script_file').text,
+        'qr_name': qr_name.text if not qr_name is None else '',
+        'predecessors': predecessors,
         'stdout_path': _text_or_none(stdout_path_list[0], 'PN_path') if stdout_path_list else '',
         'stderr_path': _text_or_none(stderr_path_list[0], 'PN_path') if stderr_path_list else '',
         'priority': job_info_element.find('JB_priority').text,
