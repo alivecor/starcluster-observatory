@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import argparse
 
 
@@ -26,4 +27,5 @@ lb = load_balancer.LoadBalancer(args.api_server_host,
 
 
 if __name__ == '__main__':
+    print('Load balancer starting polling', flush=True)
     lb.start_polling()

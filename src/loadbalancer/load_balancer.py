@@ -66,7 +66,7 @@ class LoadBalancer:
             self.api_server_host, self.api_server_port, type))
         results_json = add_node_results.json()
         if results_json['status'] == 'error':
-            print('Error adding new instance: %s', str(results_json))
+            print('Error adding new instance: %s', str(results_json), flush=True)
 
     def _remove_host(self, alias):
         """Removes host with specified alias."""
@@ -75,7 +75,7 @@ class LoadBalancer:
             self.api_server_host, self.api_server_port, alias))
         results_json = add_node_results.json()
         if results_json['status'] == 'error':
-            print('Error adding removing instance: %s', str(results_json))
+            print('Error adding removing instance: %s', str(results_json), flush=True)
 
     def _poll(self):
         """Internal method called periodically to poll the cluster state."""
@@ -83,7 +83,7 @@ class LoadBalancer:
         sge_hosts_results = requests.get('http://%s:%s/qhost' % (self.api_server_host, self.api_server_port))
         hosts_json = sge_hosts_results.json()
         if 'status' in hosts_json and hosts_json['status'] == 'error':
-            print('Error calling qhost: %s', str(hosts_json))
+            print('Error calling qhost: %s', str(hosts_json), flush=True)
             return
         hosts = hosts_json
         # Get list of jobs from API server.
@@ -96,7 +96,7 @@ class LoadBalancer:
         queued_jobs = [j for j in jobs_json if 'queue_name' in j]  # Jobs running on a queue
         pending_jobs = [j for j in jobs_json if not 'queue_name' in j]  # Jobs which haven't been assigned on a queue yet.
         print('Polling at timestamp %f.  %d pending jobs, %d queued jobs, %d hosts.' %
-              (time.time(), len(pending_jobs), len(queued_jobs), len(hosts)))
+              (time.time(), len(pending_jobs), len(queued_jobs), len(hosts)), flush=True)
 
         self.check_increase_capacity(hosts, pending_jobs)
         self.check_remove_idle(hosts, queued_jobs)
@@ -104,19 +104,21 @@ class LoadBalancer:
     def check_increase_capacity(self, hosts, pending_jobs):
         """Check if we have pending jobs, increase capacity accordingly."""
         # Filter out jobs which don't have a queue.
-        pending_jobs = [j for j in pending_jobs if 'qr_name' in j and j['qr_name'] == '']
+        pending_jobs = [j for j in pending_jobs if 'qr_name' in j and j['qr_name'] != '']
         # Filter out held jobs which are dependent on other jobs.
         # TODO: check if predecessor requirements are met or not.
         pending_jobs = [j for j in pending_jobs if len(j['predecessors']) == 0]
         # Split cpu and gpu jobs.
         pending_cpu_jobs = [j for j in pending_jobs if j['qr_name'] != 'gpu.q']
         pending_gpu_jobs = [j for j in pending_jobs if j['qr_name'] == 'gpu.q']
+        #print('Pending CPU jobs: %d' % len(pending_cpu_jobs))
+        #print('Pending GPU jobs: %d' % len(pending_gpu_jobs))
         # Give priority to GPU jobs, since that is what is most likely used for training.
         if pending_gpu_jobs:
-            print('LoadBalancer: Launching new GPU node with %d pending jobs on gpu.q' % len(pending_gpu_jobs))
+            print('LoadBalancer: Launching new GPU node with %d pending jobs on gpu.q' % len(pending_gpu_jobs), flush=True)
             self._add_host(self.gpu_type)
         elif pending_cpu_jobs:
-            print('LoadBalancer: Launching new CPU node with %d pending cpu jobs' % len(pending_cpu_jobs))
+            print('LoadBalancer: Launching new CPU node with %d pending cpu jobs' % len(pending_cpu_jobs), flush=True)
             self._add_host(self.gpu_type)
 
     def check_remove_idle(self, hosts, queued_jobs):
@@ -156,5 +158,5 @@ class LoadBalancer:
             alias = hosts_to_remove[index]
             idle_time = idle_times[index]
             # Remove one host
-            print('LoadBalancer: Removing node %s which was idle for %.1f minutes' % (alias, idle_time))
+            print('LoadBalancer: Removing node %s which was idle for %.1f minutes' % (alias, idle_time), flush=True)
             self._remove_host(alias)
