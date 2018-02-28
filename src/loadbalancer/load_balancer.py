@@ -106,8 +106,14 @@ class LoadBalancer:
 
     def check_increase_capacity(self, hosts, pending_jobs):
         """Check if we have pending jobs, increase capacity accordingly."""
-        pending_cpu_jobs = [j for j in pending_jobs if j['queue_name'] != 'gpu.q']
-        pending_gpu_jobs = [j for j in pending_jobs if j['queue_name'] == 'gpu.q']
+        # Filter out jobs which don't have a queue.
+        pending_jobs = [j for j in pending_jobs if 'qr_name' in j and j['qr_name'] == '']
+        # Filter out held jobs which are dependent on other jobs.
+        # TODO: check if predecessor requirements are met or not.
+        pending_jobs = [j for j in pending_jobs if len(j['predecessors']) == 0]
+        # Split cpu and gpu jobs.
+        pending_cpu_jobs = [j for j in pending_jobs if j['qr_name'] != 'gpu.q']
+        pending_gpu_jobs = [j for j in pending_jobs if j['qr_name'] == 'gpu.q']
         # Give priority to GPU jobs, since that is what is most likely used for training.
         if pending_gpu_jobs:
             print('LoadBalancer: Launching new GPU node with %d pending jobs on gpu.q' % len(pending_gpu_jobs))
