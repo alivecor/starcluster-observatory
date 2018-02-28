@@ -1,7 +1,6 @@
 import numpy as np
+import requests
 import schedule
-import sge
-import starcluster
 import subprocess
 import time
 from threading import Thread
@@ -10,10 +9,11 @@ from threading import Thread
 class LoadBalancer:
     """LoadBalancer polls sge on a background thread, and starts and terminates nodes to try to match load."""
     def __init__(self,
-                 cluster_name,
+                 api_server_host,
+                 api_server_port,
                  max_capacity,
                  cpu_type='c4.xlarge',
-                 gpu_type='p2.xlarge',
+                 gpu_type='p3.2xlarge',
                  idle_timeout=40 * 60,
                  polling_interval=5 * 60):
         """Constructor.
@@ -26,7 +26,8 @@ class LoadBalancer:
             idle_timeout - Terminate nodes if idle for more than idle_timeout seconds.
             polling_interval - Poll queue state every polling_interval seconds.
         """
-        self.cluster_name = cluster_name
+        self.api_server_host = api_server_host
+        self.api_server_port = api_server_port
         self.max_capacity = max_capacity
         self.cpu_type = cpu_type
         self.gpu_type = gpu_type
@@ -61,23 +62,45 @@ class LoadBalancer:
 
     def _add_host(self, type):
         """Add new node of specified type to cluster."""
-        try:
-            starcluster.add_node(self.cluster_name, instance_type=type)
-        except subprocess.CalledProcessError as e:
-            print('Error adding new %s instance: %s' % (type, str(e)))
+        add_node_results = requests.get('http://%s:%s/nodes/add?instance_type=%s' % (
+            self.api_server_host, self.api_server_port, type))
+        results_json = add_node_results.json()
+        if results_json['status'] == 'error':
+            print('Error adding new instance: %s', str(results_json))
 
     def _remove_host(self, alias):
         """Removes host with specified alias."""
         self.will_remove_host(alias)
-        try:
-            starcluster.remove_node(self.cluster_name, alias)
-        except subprocess.CalledProcessError as e:
-            print('Error auto-removing idle host %s: %s' % (alias, str(e)))
+        add_node_results = requests.get('http://%s:%s/nodes/%s/remove' % (
+            self.api_server_host, self.api_server_port, alias))
+        results_json = add_node_results.json()
+        if results_json['status'] == 'error':
+            print('Error adding removing instance: %s', str(results_json))
 
     def _poll(self):
         """Internal method called periodically to poll the cluster state."""
-        hosts = sge.qhost()
-        queued_jobs, pending_jobs = sge.qstat()
+        # Get list of hosts results from server.
+        print('Polling')
+        sge_hosts_results = requests.get('http://%s:%s/qhost' % (self.api_server_host, self.api_server_port))
+        hosts_json = sge_hosts_results.json()
+        print('---- Hosts ----')
+        print(str(hosts_json))
+        if 'status' in hosts_json and hosts_json['status'] == 'error':
+            print('Error calling qhost: %s', str(hosts_json))
+            return
+        hosts = hosts_json
+        # Get list of jobs from API server.
+        sge_jobs_results = requests.get('http://%s:%s/qstat' % (self.api_server_host, self.api_server_port))
+        jobs_json = sge_jobs_results.json()
+        print('---- Jobs ----')
+        print(str(jobs_json))
+        if 'status' in jobs_json and jobs_json['status'] == 'error':
+            print('Error calling qstat: %s', str(jobs_json))
+            return
+
+        queued_jobs = [j for j in jobs_json if 'queue_name' in j]  # Jobs running on a queue
+        pending_jobs = [j for j in jobs_json if not 'queue_name' in j]  # Jobs which haven't been assigned on a queue yet.
+
         self.check_increase_capacity(hosts, pending_jobs)
         self.check_remove_idle(hosts, queued_jobs)
 
