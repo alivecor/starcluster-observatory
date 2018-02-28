@@ -1,7 +1,7 @@
 import argparse
 
 
-import loadbalancer
+import load_balancer
 
 
 parser = argparse.ArgumentParser(description='Run a load-balancer service on the starcluster API.')
@@ -16,13 +16,13 @@ parser.add_argument('--max_capacity', default=16, type=int, help='Maximum number
 args = parser.parse_args()
 
 
-lb = loadbalancer.LoadBalancer(args.api_server_host,
-                               args.api_server_port,
-                               args.max_capacity,
-                               cpu_type=args.cpu_type,
-                               gpu_type=args.gpu_type,
-                               idle_timeout=args.idle_timeout * 60,
-                               polling_interval=args.polling_interval * 60)
+lb = load_balancer.LoadBalancer(args.api_server_host,
+                                args.api_server_port,
+                                args.max_capacity,
+                                cpu_type=args.cpu_type,
+                                gpu_type=args.gpu_type,
+                                idle_timeout=args.idle_timeout * 60,
+                                polling_interval=args.polling_interval * 60)
 
 
 if __name__ == '__main__':
