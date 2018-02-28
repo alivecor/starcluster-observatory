@@ -80,11 +80,8 @@ class LoadBalancer:
     def _poll(self):
         """Internal method called periodically to poll the cluster state."""
         # Get list of hosts results from server.
-        print('Polling')
         sge_hosts_results = requests.get('http://%s:%s/qhost' % (self.api_server_host, self.api_server_port))
         hosts_json = sge_hosts_results.json()
-        print('---- Hosts ----')
-        print(str(hosts_json))
         if 'status' in hosts_json and hosts_json['status'] == 'error':
             print('Error calling qhost: %s', str(hosts_json))
             return
@@ -92,14 +89,14 @@ class LoadBalancer:
         # Get list of jobs from API server.
         sge_jobs_results = requests.get('http://%s:%s/qstat' % (self.api_server_host, self.api_server_port))
         jobs_json = sge_jobs_results.json()
-        print('---- Jobs ----')
-        print(str(jobs_json))
         if 'status' in jobs_json and jobs_json['status'] == 'error':
             print('Error calling qstat: %s', str(jobs_json))
             return
 
         queued_jobs = [j for j in jobs_json if 'queue_name' in j]  # Jobs running on a queue
         pending_jobs = [j for j in jobs_json if not 'queue_name' in j]  # Jobs which haven't been assigned on a queue yet.
+        print('Polling at timestamp %f.  %d pending jobs, %d queued jobs, %d hosts.' %
+              (time.time(), len(pending_jobs), len(queued_jobs), len(hosts)))
 
         self.check_increase_capacity(hosts, pending_jobs)
         self.check_remove_idle(hosts, queued_jobs)
