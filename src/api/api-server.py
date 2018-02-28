@@ -37,8 +37,8 @@ def cluster_status():
 @app.route('/get_errors')
 def get_errors():
     """Get any pending errors from starcluster background processes."""
-    starcluster.subprocesses.poll()
-    errors = starcluster.subprocesses.pop_errors()
+    starcluster.subprocess_q.poll()
+    errors = starcluster.subprocess_q.pop_errors()
     return jsonify({
         'status': 'ok',
         'errors': errors
@@ -60,6 +60,7 @@ def qhost():
 
 @app.route('/instances')
 def instances():
+    starcluster.subprocess_q.poll()
     """List all AWS instances in the current cluster.  Should match up with results of /qhost, but not necessarily."""
     try:
         instances = starcluster.list_instances()
@@ -86,6 +87,7 @@ def instances():
 
 @app.route('/qstat')
 def qstat():
+    starcluster.subprocess_q.poll()
     job_id = request.args.get('job_id')
     try:
         if job_id is None:
@@ -147,6 +149,7 @@ def cluster_remove_node(node_alias):
 
 @app.route('/spot_history')
 def spot_prices():
+    starcluster.subprocess_q.poll()
     type_list = request.args.get('instance_types')
     if type_list is None:
         instance_types = ['p2.xlarge', 'p3.2xlarge']
