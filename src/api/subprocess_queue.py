@@ -56,15 +56,15 @@ class SubprocessQueue:
     def poll(self):
         """Check subprocesses, add failed processes to error queue."""
         completed_indices = []
-        for i, subprocess in enumerate(self._subprocesses):
-            state = subprocess.p.poll()
+        for i, sub in enumerate(self._subprocesses):
+            state = sub.p.poll()
             if state is None:
-                print('%s still running' % subprocess.identifier)
+                print('%s still running' % sub.identifier)
             elif state == 0:
-                print('%s completed' % subprocess.identifier)
+                print('%s completed' % sub.identifier)
                 completed_indices.append(i)
             else:
-                self._error_list.append(subprocess)
+                self._error_list.append(sub)
                 completed_indices.append(i)
         for i in reversed(completed_indices):
             del self._subprocesses[i]
