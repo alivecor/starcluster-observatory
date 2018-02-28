@@ -1,4 +1,5 @@
-"""Manages a list of asynchronous tasks as subprocesses."""
+"""Manages a serial queue of asynchronous tasks as subprocesses."""
+import queue
 import subprocess
 
 
@@ -14,10 +15,11 @@ class Subprocess:
         self.p = p
 
 
-class SubprocessPool:
+class SubprocessQueue:
     def __init__(self):
+        self._command_queue = queue.Queue()
         self._subprocesses = []
-        self._error_queue = []
+        self._error_list = []
 
     def run_command(self, command_args, identifier=None):
         """Run a command in the background.
@@ -28,14 +30,14 @@ class SubprocessPool:
         """
         if identifier is None:
             identifier = command_args[0]
-        p = subprocess.Popen(command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        self._subprocesses.append(Subprocess(identifier, p))
+        self._command_queue.put((command_args, identifier))
+        self.poll()
 
     def pop_errors(self):
         """Poll for errors, return all from queue."""
         self.poll()
         errors = []
-        for failed_sp in self._error_queue:
+        for failed_sp in self._error_list:
             exit_code = failed_sp.p.poll()
             stdout = ''
             if failed_sp.p.stdout:
@@ -48,7 +50,7 @@ class SubprocessPool:
                 'error': stderr,
                 'output': stdout,
             })
-        self._error_queue = []
+        self._error_list = []
         return errors
 
     def poll(self):
@@ -62,7 +64,13 @@ class SubprocessPool:
                 print('%s completed' % subprocess.identifier)
                 completed_indices.append(i)
             else:
-                self._error_queue.append(subprocess)
+                self._error_list.append(subprocess)
                 completed_indices.append(i)
         for i in reversed(completed_indices):
             del self._subprocesses[i]
+        # Start new subprocesses if needed.
+        if len(self._subprocesses) == 0:
+            if not self._command_queue.empty():
+                command_args, identifier = self._command_queue.get()
+                p = subprocess.Popen(command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                self._subprocesses.append(Subprocess(identifier, p))

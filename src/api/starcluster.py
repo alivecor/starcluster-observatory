@@ -1,14 +1,14 @@
 """Wrapper for the starcluster command."""
 import re
 import subprocess
-import subprocess_pool
+import subprocess_queue
 
 
 STARCLUSTER_PATH = '/usr/local/bin/starcluster'
 CONFIG_PATH = '/etc/starcluster/config'
 
 
-subprocesses = subprocess_pool.SubprocessPool()
+subprocess_q = subprocess_queue.SubprocessQueue()
 
 
 def _starcluster_command():
@@ -148,9 +148,6 @@ def add_node(cluster_name, instance_type=None, ami=None, spot_bid=None):
         instance_type (string) - The type of instance i.e. p3.2xlarge.
         ami (string) - The id of the amazon machine image to launch.
         spot_bid (string) - If specified, launch a spot instance at the this bid price.  Otherwise, launch an on-demand instance.
-
-    Returns:
-        subprocess.Popen
     """
     command_args = [STARCLUSTER_PATH, '-c', CONFIG_PATH, 'addnode']
     if not instance_type is None:
@@ -164,7 +161,7 @@ def add_node(cluster_name, instance_type=None, ami=None, spot_bid=None):
         command_args.append(spot_bid)
     command_args.append(_filter_cluster_name(cluster_name))
     # print('Detaching: ' + str(command_args))
-    subprocesses.run_command(command_args, 'add %s' % instance_type)
+    subprocess_q.run_command(command_args, 'add %s' % instance_type)
 
 
 def remove_node(cluster_name, node_alias):
@@ -175,10 +172,7 @@ def remove_node(cluster_name, node_alias):
     Args:
         cluster_name (string) - The name of the cluster
         node_alias (string) - The alias of the node to remove
-
-    Returns:
-        subprocess.Popen
     """
     command_args = [STARCLUSTER_PATH, '-c', CONFIG_PATH, 'removenode', '--confirm', '-f', '-a', node_alias, _filter_cluster_name(cluster_name)]
     # print('Detaching: ' + str(command_args))
-    subprocesses.run_command(command_args, 'remove node %s' % node_alias)
+    subprocess_q.run_command(command_args, 'remove node %s' % node_alias)
