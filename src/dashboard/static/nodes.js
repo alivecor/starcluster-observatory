@@ -89,6 +89,15 @@ $(window).bind('ConfigurePopover', function(e, data) {
         window.location.replace('/observatory/add_node?instance_type=' + instance_type);
     });
 
+    $(document).delegate('.btn-spot','click', function(e) {
+        // Launch spot instance
+        e.preventDefault();
+        var row = $('[name="launchConfigGroup"]:checked').parents('tr');
+        var type_elem = $(row.children()[2]);
+        var instance_type = type_elem.text();
+        window.location.replace('/observatory/add_node?instance_type=' + instance_type + '&spot_bid=True');
+    });
+
     $(document).delegate('.btn-cancel-option', 'click', function(e) {
         e.preventDefault();
         var element = $(this).parents('.popover');
