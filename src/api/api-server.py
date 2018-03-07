@@ -132,8 +132,9 @@ def cancel_job(jid):
 @app.route('/nodes/add')
 def cluster_add_node():
     instance_type = request.args.get('instance_type')
+    spot_bid = request.args.get('spot_bid')
     try:
-         starcluster.add_node(args.cluster_name, instance_type=instance_type)
+         starcluster.add_node(args.cluster_name, instance_type=instance_type, spot_bid=spot_bid)
     except subprocess.CalledProcessError as e:
         return jsonify({
             'status': 'error',
