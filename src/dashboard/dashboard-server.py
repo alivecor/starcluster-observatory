@@ -127,8 +127,11 @@ def get_nodes_and_cost():
         host_dict['type'] = instance['type']
         host_dict['uptime'] = instance['uptime']
         if 'load_avg' in host_dict:
-            load_pct = float(host_dict['load_avg']) * 100
-            host_dict['load_avg'] = int(load_pct)
+            try:
+                load_pct = float(host_dict['load_avg']) * 100
+                host_dict['load_avg'] = int(load_pct)
+            except ValueError:
+                host_dict['load_avg'] = '-'
         if not instance['spot_request'] is None:
             prices_results = requests.get('http://%s:%s/spot_history?instance_types=%s' % (
                 args.api_server_host, args.api_server_port, instance['type']
