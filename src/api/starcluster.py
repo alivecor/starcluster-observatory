@@ -38,11 +38,15 @@ def _parse_cluster(cluster_name, listclusters_output):
             nodes = []
             while _is_indented(lines[li]):
                 components = lines[li].strip().split(' ')
+                spot_request = None
+                if len(components) == 6 and components[4].endswith('spot'):
+                    spot_request = components[5][:-1]
                 nodes.append({
                     'alias': components[0],
                     'state': components[1],
                     'instance_id': components[2],
                     'hostname': components[3],
+                    'spot_request': spot_request
                 })
                 li += 1
             cluster_attributes['nodes'] = nodes

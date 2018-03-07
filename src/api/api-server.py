@@ -78,10 +78,20 @@ def instances():
             'error': 'An error occurred while running starcluster listclusters'
         })
     instances_by_alias = {i['alias'] : i for i in instances if 'alias' in i}
-    # Find instance of our cluster.
+    # Find our cluster, and get its instance list.
     cluster = next((c for c in clusters if c['name'] == args.cluster_name), None)
     node_aliases = [node['alias'] for node in cluster['nodes']]
-    cluster_instances = [instances_by_alias[a] for a in node_aliases if a in instances_by_alias]
+    # Note which instances are launched by spot requests.
+    spot_requests = {}
+    for node in cluster['nodes']:
+        spot_requests[node['alias']] = node['spot_request']
+    cluster_instances = []
+    for a in node_aliases:
+        if a in instances_by_alias:
+            instance = instances_by_alias[a]
+            # Copy spot request field over to instance.
+            instance['spot_request'] = spot_requests[a]
+            cluster_instances.append(instance)
     return jsonify(cluster_instances)
 
 
