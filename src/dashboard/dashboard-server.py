@@ -119,6 +119,7 @@ def get_nodes_and_cost():
             state = 'pending'
         if name in jobs_by_host:
             host_dict['job_ids'] = ','.join([str(jid) for jid in jobs_by_host[name]])
+            host_dict['disable_terminate'] = True  # Disable termination if node running jobs.
         else:
             host_dict['job_ids'] = ''
         host_dict['public_ip'] = instance['public_ip']

@@ -55,6 +55,7 @@
                   <td>
 {% if not 'master' in host.name %}
                     <a href="remove_node?alias={{ host.name }}" class="btn btn-large btn-danger" data-toggle="confirmation"
+                       {% if host.disable_terminate %} aria-disabled="true"{% endif %}
                        data-singleton="true" data-title="Terminate Instance?">
                       Terminate
                     </a>
