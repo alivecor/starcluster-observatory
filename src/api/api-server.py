@@ -5,6 +5,7 @@ from flask import jsonify
 from flask import request
 import subprocess
 
+import cache
 import sge
 import starcluster
 
@@ -157,6 +158,10 @@ def cluster_remove_node(node_alias):
     })
 
 
+# Cache spot prices for 30 minutes, since fetching spot prices can be slow.
+_spot_cache = cache.Cache(timeout=1800)
+
+
 @app.route('/spot_history')
 def spot_prices():
     starcluster.subprocess_q.poll()
@@ -168,7 +173,12 @@ def spot_prices():
     prices = []
     try:
         for instance_type in instance_types:
-            current, average, max = starcluster.spot_history(instance_type)
+            cached_value = _spot_cache.value_for_key(instance_type)
+            if cached_value is None:
+                current, average, max = starcluster.spot_history(instance_type)
+                _spot_cache.set_value_for_key((current, average, max), instance_type)
+            else:
+                current, average, max = cached_value
             prices.append(dict(
                 instance_type=instance_type,
                 current=current,
