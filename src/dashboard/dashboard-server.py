@@ -128,7 +128,14 @@ def get_nodes_and_cost():
         if 'load_avg' in host_dict:
             load_pct = float(host_dict['load_avg']) * 100
             host_dict['load_avg'] = int(load_pct)
-        if instance['type'] in aws_static.ondemand_instance_cost:
+        if not instance['spot_request'] is None:
+            prices_results = requests.get('http://%s:%s/spot_history?instance_types=%s' % (
+                args.api_server_host, args.api_server_port, instance['type']
+            ))
+            results = prices_results.json()
+            price = float(results['prices'][0]['current'])
+            total_cost += price
+        elif instance['type'] in aws_static.ondemand_instance_cost:
             total_cost += aws_static.ondemand_instance_cost[instance['type']]
         nodes.append(host_dict)
     return nodes, total_cost
@@ -166,10 +173,16 @@ def nodes_alerts():
 @app.route('/add_node')
 def add_node():
     instance_type = request.args.get('instance_type')
+    spot_bid = request.args.get('spot_bid')
     # Add a node
     request_url = 'http://%s:%s/nodes/add' % (args.api_server_host, args.api_server_port)
     if instance_type:
         request_url = request_url + '?instance_type=%s' % instance_type
+        # For now, bid the on-demand instance price.
+        # TODO: allow user to specify bid or bidding policy.
+        if (not spot_bid is None) and (instance_type in aws_static.ondemand_instance_cost):
+            bid_price = aws_static.ondemand_instance_cost[instance_type]
+            request_url = request_url + '&spot_bid=%s' % bid_price
     add_result = requests.get(request_url)
     alert_queue.add_alert(Alert.INFO, 'Instance Launching', instance_type, 60)
     return redirect(os.path.join(url_prefix, 'nodes_content.html'), code=302)
