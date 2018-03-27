@@ -137,10 +137,13 @@ def get_nodes_and_cost():
                 args.api_server_host, args.api_server_port, instance['type']
             ))
             results = prices_results.json()
-            price = float(results['prices'][0]['current'])
-            total_cost += price
+            cost = float(results['prices'][0]['current'])
+            host_dict['cost'] = '$%.2f' % cost
+            total_cost += cost
         elif instance['type'] in aws_static.ondemand_instance_cost:
-            total_cost += aws_static.ondemand_instance_cost[instance['type']]
+            cost = aws_static.ondemand_instance_cost[instance['type']]
+            host_dict['cost'] = '$%.2f' % cost
+            total_cost += cost
         nodes.append(host_dict)
     return nodes, total_cost
 
