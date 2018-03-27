@@ -85,10 +85,9 @@
                   <td>{{ host.public_ip }}</td>
                   <td>{{ host.uptime }}</td>
                   <td>
-{% if not 'master' in host.name %}
+{% if not 'master' in host.name and not host.disable_terminate %}
                     <a href="remove_node?alias={{ host.name }}"
-                       class="btn btn-large btn-danger {% if host.disable_terminate %}btn-disabled{% endif %}"
-                       {% if host.disable_terminate %} aria-disabled="true"{% endif %}
+                       class="btn btn-large btn-danger"
                        data-toggle="confirmation" data-singleton="true" data-title="Terminate Instance?">
                       Terminate
                     </a>
