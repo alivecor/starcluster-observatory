@@ -148,6 +148,24 @@ def get_nodes_and_cost():
     return nodes, total_cost
 
 
+def check_errors():
+    """Check API server for list of errors, create alerts for all pending errors."""
+    get_errors_response = requests.get('http://%s:%s/get_errors' % (args.api_server_host, args.api_server_port))
+    get_errors_json = get_errors_response.json()
+    errors = get_errors_json['errors']
+    for error in errors:
+        stderr = error['error']
+        lines = stderr.split('\n')
+        # Find first line containing ERROR, or first line
+        error_text = lines[0]
+        for line in lines:
+            if 'ERROR' in line:
+                error_text = line
+                break
+        # Add it to alert queue as an error
+        alert_queue.add_alert(Alert.ERROR, error_text, '', 300)
+
+
 @app.route('/nodes_tab.html')
 def nodes_tab():
     """Render nodes tab."""
@@ -173,6 +191,7 @@ def nodes_content():
 @app.route('/nodes_alerts')
 def nodes_alerts():
     """Render alerts for nodes page."""
+    check_errors()
     alerts = alert_queue.get_alerts()
     return render_template('alerts.html', alerts=alerts)
 

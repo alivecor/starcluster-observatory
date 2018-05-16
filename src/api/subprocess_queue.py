@@ -61,7 +61,14 @@ class SubprocessQueue:
             if state is None:
                 print('%s still running' % sub.identifier)
             elif state == 0:
-                print('%s completed' % sub.identifier)
+                # Examine stderr to see if we have an error
+                stderr = ''
+                if sub.p.stderr:
+                    stderr = sub.p.stderr.read().decode('utf-8')
+                if 'ERROR' in stderr:
+                    self._error_list.append(sub)
+                else:
+                    print('%s completed' % sub.identifier)
                 completed_indices.append(i)
             else:
                 self._error_list.append(sub)
