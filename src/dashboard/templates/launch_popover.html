@@ -26,6 +26,28 @@
             </tbody>
         </table>
     </div>
+{% if len(zones) > 0 %}
+    <div class="col-sm-2">
+        <table id="zones-table" class="table table-striped" data-striped="true">
+            <thead>
+                <tr>
+                    <th data-field="state" data-radio="true"></th>
+                    <th data-field="availability_zone">Zone</th>
+                </tr>
+            </thead>
+            <tbody>
+{% for zone in zones %}
+                <tr>
+                    <td>
+                        <input type="radio" name="zoneGroup" {% if zone.first %}checked{% endif %}>
+                    </td>
+                    <td>{{ zone }}</td>
+                </tr>
+{% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
 </div>
 <div class="row">
     <div class="col-sm-10">
