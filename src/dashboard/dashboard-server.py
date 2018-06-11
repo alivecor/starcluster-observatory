@@ -25,6 +25,7 @@ parser.add_argument('--zones', type=str, help='Availability zones user is allowe
 parser.add_argument('--subnets', type=str, help='Subnets in VPC, for use with zones.')
 args = parser.parse_args()
 
+
 # TODO: make timezone a parameter or infer from region.
 timezone = pytz.timezone('America/Los_Angeles')
 
@@ -215,6 +216,13 @@ def add_node():
             request_url = request_url + '&spot_bid=%s' % bid_price
     if zone:
         request_url = request_url + '?zone=%s' % zone
+        # Ensures subnet matches availability zone, important if running in VPC.
+        if not args.subnets is None:
+            zone_list = args.zones.split(',')
+            subnet_list = args.subnets.split(',')
+            if zone in zone_list:
+                index = zone_list.index(zone)
+                subnet = subnet_list[index]
     if subnet:
         request_url = request_url + '?subnet=%s' % subnet
     add_result = requests.get(request_url)
