@@ -250,8 +250,7 @@ def launch_popover():
     first = True
     for price in prices:
         price['first'] = first
-        if first:
-            first = False
+        first = False
         # Add to price dict the on-demand cost and configuration.
         instance_type = price['instance_type']
         if instance_type in aws_static.ondemand_instance_cost:
@@ -260,7 +259,13 @@ def launch_popover():
             price['configuration'] = aws_static.instance_types[instance_type]
     zones = []
     if not args.zones is None:
-        zones = args.zones.split(',')
+        first = True
+        for zone_id in args.zones.split(','):
+            zones.append({
+                'first': first,
+                'zone_id': zone_id,
+            })
+            first = False
     return render_template('launch_popover.html', prices=prices, zones=zones)
 
 
