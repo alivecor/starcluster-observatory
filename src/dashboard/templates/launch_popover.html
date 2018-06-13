@@ -1,6 +1,6 @@
 <!-- HTML content of launch instance table -->
 <div class="row">
-    <div class="col-sm-8 col-md-19">
+    <div class="col-sm-8 col-md-8">
         <table id="instance-types-table" class="table table-striped" data-striped="true">
             <thead>
                 <tr>
@@ -27,12 +27,12 @@
         </table>
     </div>
 {% if zones %}
-    <div class="col-sm-4 col-md-2">
+    <div class="col-sm-4 col-md-4">
         <table id="zones-table" class="table table-striped" data-striped="true">
             <thead>
                 <tr>
                     <th data-field="state" data-radio="true"></th>
-                    <th data-field="availability_zone">Zone</th>
+                    <th class="zone-table-column" data-field="availability_zone">Zone</th>
                 </tr>
             </thead>
             <tbody>

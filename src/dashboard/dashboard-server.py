@@ -215,7 +215,7 @@ def add_node():
             bid_price = aws_static.ondemand_instance_cost[instance_type]
             request_url = request_url + '&spot_bid=%s' % bid_price
     if zone:
-        request_url = request_url + '?zone=%s' % zone
+        request_url = request_url + '&zone=%s' % zone
         # Ensures subnet matches availability zone, important if running in VPC.
         if not args.subnets is None:
             zone_list = args.zones.split(',')
@@ -224,7 +224,7 @@ def add_node():
                 index = zone_list.index(zone)
                 subnet = subnet_list[index]
     if subnet:
-        request_url = request_url + '?subnet=%s' % subnet
+        request_url = request_url + '&subnet=%s' % subnet
     add_result = requests.get(request_url)
     alert_queue.add_alert(Alert.INFO, 'Instance Launching', instance_type, 60)
     return redirect(os.path.join(url_prefix, 'nodes_content.html'), code=302)
