@@ -129,6 +129,7 @@ body {
  * Launch instance popover width.
  */
 .popover {
+    width:480px;
     max-width:640px;
 }
 
