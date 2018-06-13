@@ -21,7 +21,10 @@ parser.add_argument('--port', default=6360, type=int, help='Port to listen on.')
 parser.add_argument('--api_server_host', default='127.0.0.1', type=str, help='IP address of the backend.')
 parser.add_argument('--api_server_port', default=6361, type=int, help='Port to use to connect to API server.')
 parser.add_argument('--instance_types', default='c4.large,p2.xlarge,p3.2xlarge', type=str, help='Instance types user is allowed to launch.')
+parser.add_argument('--zones', type=str, help='Availability zones user is allowed to launch in.')
+parser.add_argument('--subnets', type=str, help='Subnets in VPC, for use with zones.')
 args = parser.parse_args()
+
 
 # TODO: make timezone a parameter or infer from region.
 timezone = pytz.timezone('America/Los_Angeles')
@@ -200,6 +203,8 @@ def nodes_alerts():
 def add_node():
     instance_type = request.args.get('instance_type')
     spot_bid = request.args.get('spot_bid')
+    zone = request.args.get('zone')
+    subnet = request.args.get('subnet')
     # Add a node
     request_url = 'http://%s:%s/nodes/add' % (args.api_server_host, args.api_server_port)
     if instance_type:
@@ -209,6 +214,17 @@ def add_node():
         if (not spot_bid is None) and (instance_type in aws_static.ondemand_instance_cost):
             bid_price = aws_static.ondemand_instance_cost[instance_type]
             request_url = request_url + '&spot_bid=%s' % bid_price
+    if zone:
+        request_url = request_url + '&zone=%s' % zone
+        # Ensures subnet matches availability zone, important if running in VPC.
+        if not args.subnets is None:
+            zone_list = args.zones.split(',')
+            subnet_list = args.subnets.split(',')
+            if zone in zone_list:
+                index = zone_list.index(zone)
+                subnet = subnet_list[index]
+    if subnet:
+        request_url = request_url + '&subnet=%s' % subnet
     add_result = requests.get(request_url)
     alert_queue.add_alert(Alert.INFO, 'Instance Launching', instance_type, 60)
     return redirect(os.path.join(url_prefix, 'nodes_content.html'), code=302)
@@ -234,15 +250,23 @@ def launch_popover():
     first = True
     for price in prices:
         price['first'] = first
-        if first:
-            first = False
+        first = False
         # Add to price dict the on-demand cost and configuration.
         instance_type = price['instance_type']
         if instance_type in aws_static.ondemand_instance_cost:
             price['on_demand'] = aws_static.ondemand_instance_cost[instance_type]
         if instance_type in aws_static.instance_types:
             price['configuration'] = aws_static.instance_types[instance_type]
-    return render_template('launch_popover.html', prices=prices)
+    zones = []
+    if not args.zones is None:
+        first = True
+        for zone_id in args.zones.split(','):
+            zones.append({
+                'first': first,
+                'zone_id': zone_id,
+            })
+            first = False
+    return render_template('launch_popover.html', prices=prices, zones=zones)
 
 
 @app.route('/cancel_job')

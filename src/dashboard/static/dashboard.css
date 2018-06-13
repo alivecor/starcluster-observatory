@@ -129,9 +129,14 @@ body {
  * Launch instance popover width.
  */
 .popover {
-    max-width:390px;
+    width:640px;
+    max-width:640px;
 }
 
 .alerts-container {
     width: 50%;
+}
+
+.zone-table-column {
+    width: 128px;
 }

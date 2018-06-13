@@ -83,19 +83,35 @@ $(window).bind('ConfigurePopover', function(e, data) {
     $(document).delegate('.btn-launch','click', function(e) {
         // Launch on-demand instance
         e.preventDefault();
-        var row = $('[name="launchConfigGroup"]:checked').parents('tr');
-        var type_elem = $(row.children()[2]);
+        var config_row = $('[name="launchConfigGroup"]:checked').parents('tr');
+        var type_elem = $(config_row.children()[2]);
         var instance_type = type_elem.text();
-        window.location.replace('/observatory/add_node?instance_type=' + instance_type);
+        // Get zone, if any
+        var zone_row = $('[name="zoneGroup"]:checked');
+        zone_arg = '';
+        if (zone_row.length) {
+            var zone_elem = $(zone_row.parents('tr').children()[1]);
+            var zone = zone_elem.text();
+            zone_arg = '&zone=' + zone;
+        }
+        window.location.replace('/observatory/add_node?instance_type=' + instance_type + zone_arg);
     });
 
     $(document).delegate('.btn-spot','click', function(e) {
         // Launch spot instance
         e.preventDefault();
-        var row = $('[name="launchConfigGroup"]:checked').parents('tr');
-        var type_elem = $(row.children()[2]);
+        var config_row = $('[name="launchConfigGroup"]:checked').parents('tr');
+        var type_elem = $(config_row.children()[2]);
         var instance_type = type_elem.text();
-        window.location.replace('/observatory/add_node?instance_type=' + instance_type + '&spot_bid=True');
+        // Get zone, if any
+        var zone_row = $('[name="zoneGroup"]:checked');
+        zone_arg = '';
+        if (zone_row.length) {
+            var zone_elem = $(zone_row.parents('tr').children()[1]);
+            var zone = zone_elem.text();
+            zone_arg = '&zone=' + zone;
+        }
+        window.location.replace('/observatory/add_node?instance_type=' + instance_type + zone_arg + '&spot_bid=True');
     });
 
     $(document).delegate('.btn-cancel-option', 'click', function(e) {

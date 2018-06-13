@@ -142,7 +142,7 @@ def spot_history(instance_type):
     return current, average, max
 
 
-def add_node(cluster_name, instance_type=None, ami=None, spot_bid=None):
+def add_node(cluster_name, instance_type=None, ami=None, spot_bid=None, zone=None, subnet=None):
     """Adds a node to the specified cluster.
     Note: Launching a new node node may take several minutes, but add_node returns
     immediately after launching the subprocess and does not wait.
@@ -152,6 +152,8 @@ def add_node(cluster_name, instance_type=None, ami=None, spot_bid=None):
         instance_type (string) - The type of instance i.e. p3.2xlarge.
         ami (string) - The id of the amazon machine image to launch.
         spot_bid (string) - If specified, launch a spot instance at the this bid price.  Otherwise, launch an on-demand instance.
+        zone (string) - The availability zone to add the node to, i.e. us-west-2a
+        subnet (string) - For use with --zone in a VPC - the VPC subnet for the specified availability zone.
     """
     command_args = [STARCLUSTER_PATH, '-c', CONFIG_PATH, 'addnode']
     if not instance_type is None:
@@ -163,6 +165,12 @@ def add_node(cluster_name, instance_type=None, ami=None, spot_bid=None):
     if not spot_bid is None:
         command_args.append('-b')
         command_args.append(spot_bid)
+    if not zone is None:
+        command_args.append('-z')
+        command_args.append(zone)
+    if not subnet is None:
+        command_args.append('-s')
+        command_args.append(subnet)
     command_args.append(_filter_cluster_name(cluster_name))
     # print('Detaching: ' + str(command_args))
     subprocess_q.run_command(command_args, 'add %s' % instance_type)
