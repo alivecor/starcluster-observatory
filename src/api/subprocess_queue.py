@@ -79,5 +79,6 @@ class SubprocessQueue:
         if len(self._subprocesses) == 0:
             if not self._command_queue.empty():
                 command_args, identifier = self._command_queue.get()
+                print(' '.join(command_args))
                 p = subprocess.Popen(command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 self._subprocesses.append(Subprocess(identifier, p))
