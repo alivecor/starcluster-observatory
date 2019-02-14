@@ -1,9 +1,10 @@
 import numpy as np
 import requests
 import schedule
-import subprocess
 import time
 from threading import Thread
+
+from cluster import Cluster
 
 
 class LoadBalancer:
@@ -12,26 +13,18 @@ class LoadBalancer:
                  api_server_host,
                  api_server_port,
                  max_capacity,
-                 cpu_type='c4.xlarge',
-                 gpu_type='p3.2xlarge',
-                 idle_timeout=40 * 60,
                  polling_interval=5 * 60):
         """Constructor.
 
         Args:
-            cluster_name (string) - The cluster name.
+            api_server_host (string) - The IP address of the API server.
+            api_server_port (int) - The port to connect to.
             max_capacity (int) - The maximum number of worker nodes allowed.
-            cpu_type (string) - The default CPU instance type to add.
-            gpu_type (string) - The default GPU instance type to add.
-            idle_timeout - Terminate nodes if idle for more than idle_timeout seconds.
             polling_interval - Poll queue state every polling_interval seconds.
         """
         self.api_server_host = api_server_host
         self.api_server_port = api_server_port
         self.max_capacity = max_capacity
-        self.cpu_type = cpu_type
-        self.gpu_type = gpu_type
-        self.idle_timeout = idle_timeout
         self.polling_interval = polling_interval
         schedule.every(self.polling_interval).seconds.do(self._poll)
         self.polling = False
@@ -48,11 +41,6 @@ class LoadBalancer:
         """Stop polling and load balancing."""
         self.polling = False
         self.polling_thread = None
-
-    def will_remove_host(self, alias):
-        """Inform the load balancer that a specified host will be removed."""
-        if alias in self._idle_hosts:
-            del self._idle_hosts[alias]
 
     def _run_schedule(self):
         """Run loop for the background task scheduler thread."""
@@ -97,9 +85,11 @@ class LoadBalancer:
         pending_jobs = [j for j in jobs_json if not 'queue_name' in j]  # Jobs which haven't been assigned on a queue yet.
         print('Polling at timestamp %f.  %d pending jobs, %d queued jobs, %d hosts.' %
               (time.time(), len(pending_jobs), len(queued_jobs), len(hosts)), flush=True)
-
-        self.check_increase_capacity(hosts, pending_jobs)
-        self.check_remove_idle(hosts, queued_jobs)
+        print('Hosts: %s' % hosts)
+        print('Pending Jobs: %s' % hosts)
+        print('Queued Jobs: %s' % hosts)
+        #self.check_increase_capacity(hosts, pending_jobs)
+        #self.check_remove_idle(hosts, queued_jobs)
 
     def check_increase_capacity(self, hosts, pending_jobs):
         """Check if we have pending jobs, increase capacity accordingly."""
