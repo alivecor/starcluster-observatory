@@ -67,13 +67,16 @@ def qstat_job_details(jid, state=None, queue_name=None):
     stdout_path_list = job_info_element.find('JB_stdout_path_list')
     stderr_path_list = job_info_element.find('JB_stderr_path_list')
     hard_queue_list = job_info_element.find('JB_hard_queue_list')
-    destination_ident_list = hard_queue_list.find('destin_ident_list')
-    qr_name = destination_ident_list[0]
+    if hard_queue_list is not None:
+        destination_ident_list = hard_queue_list.find('destin_ident_list')
+        qr_name = destination_ident_list[0]
+    else:
+        qr_name = None
     predecessors = []
     predecessor_list = job_info_element.find('JB_jid_predecessor_list')
-    if not predecessor_list is None:
+    if predecessor_list is not None:
         job_predecessors = predecessor_list.find('job_predecessors')
-        if not job_predecessors is None:
+        if job_predecessors is not None:
             for predecessor in job_predecessors:
                 predecessors.append(int(predecessor.text))
     job_details = {
@@ -81,7 +84,7 @@ def qstat_job_details(jid, state=None, queue_name=None):
         'owner': job_info_element.find('JB_owner').text,
         'name': job_info_element.find('JB_job_name').text,
         'executable': job_info_element.find('JB_script_file').text,
-        'qr_name': qr_name.text if not qr_name is None else '',
+        'qr_name': qr_name.text if qr_name is not None else '',
         'predecessors': predecessors,
         'stdout_path': _text_or_none(stdout_path_list[0], 'PN_path') if stdout_path_list else '',
         'stderr_path': _text_or_none(stderr_path_list[0], 'PN_path') if stderr_path_list else '',
