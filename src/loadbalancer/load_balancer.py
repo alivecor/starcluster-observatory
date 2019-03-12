@@ -12,19 +12,16 @@ class LoadBalancer:
     def __init__(self,
                  api_server_host,
                  api_server_port,
-                 max_capacity,
                  polling_interval=5 * 60):
         """Constructor.
 
         Args:
             api_server_host (string) - The IP address of the API server.
             api_server_port (int) - The port to connect to.
-            max_capacity (int) - The maximum number of worker nodes allowed.
             polling_interval - Poll queue state every polling_interval seconds.
         """
         self.api_server_host = api_server_host
         self.api_server_port = api_server_port
-        self.max_capacity = max_capacity
         self.polling_interval = polling_interval
         schedule.every(self.polling_interval).seconds.do(self._poll)
         self.polling = False
