@@ -65,31 +65,36 @@ class LoadBalancer:
         if results_json['status'] == 'error':
             print('Error adding removing instance: %s', str(results_json), flush=True)
 
-    def _poll(self):
-        """Internal method called periodically to poll the cluster state."""
-        # Get list of hosts results from server.
+    def _qhost(self):
+        """Calls qhost to get host list"""
         sge_hosts_results = requests.get('http://%s:%s/qhost' % (self.api_server_host, self.api_server_port))
         hosts_json = sge_hosts_results.json()
         if 'status' in hosts_json and hosts_json['status'] == 'error':
             print('Error calling qhost: %s', str(hosts_json), flush=True)
-            return
-        hosts = hosts_json
-        # Get list of jobs from API server.
+            return None
+        return hosts_json
+
+    def _qstat(self):
+        """Calls qstat to get job list"""
         sge_jobs_results = requests.get('http://%s:%s/qstat' % (self.api_server_host, self.api_server_port))
         jobs_json = sge_jobs_results.json()
         if 'status' in jobs_json and jobs_json['status'] == 'error':
             print('Error calling qstat: %s', str(jobs_json))
-            return
+            return None
+        return jobs_json
 
-        queued_jobs = [j for j in jobs_json if 'queue_name' in j]  # Jobs running on a queue
-        pending_jobs = [j for j in jobs_json if not 'queue_name' in j]  # Jobs which haven't been assigned on a queue yet.
-        print('Polling at timestamp %f.  %d pending jobs, %d queued jobs, %d hosts.' %
-              (time.time(), len(pending_jobs), len(queued_jobs), len(hosts)), flush=True)
-        print('Hosts: %s' % hosts)
-        print('Pending Jobs: %s' % hosts)
-        print('Queued Jobs: %s' % hosts)
-        #self.check_increase_capacity(hosts, pending_jobs)
-        #self.check_remove_idle(hosts, queued_jobs)
+    def _poll(self):
+        """Internal method called periodically to poll the cluster state."""
+        # Get list of hosts results from server.
+        hosts_json = self._qhost()
+        if hosts_json is None:
+            return
+        jobs_json = self._qstat()
+        if jobs_json is None:
+            return
+        print('TODO: transform hosts and jobs into cluster datastructure')
+        print('hosts_json:\n' + str(hosts_json))
+        print('jobs_json:\n' + str(jobs_json))
 
     def check_increase_capacity(self, hosts, pending_jobs):
         """Check if we have pending jobs, increase capacity accordingly."""
