@@ -1,5 +1,6 @@
 """Cluster defines the cluster state as a list/collection of nodes."""
 
+from job import Job
 from node import JobQueue
 from node import Node
 
@@ -9,6 +10,7 @@ class Cluster:
         """Constructor."""
         self.name = name
         self.nodes = nodes
+        self.jobs = []
 
     @classmethod
     def parseFromJSON(cls, json):
@@ -31,7 +33,18 @@ class Cluster:
         return Cluster(cluster_name, nodes)
 
     def populateJobsFromJSON(self, json):
-        print('warning: populateJobsFromJSON not yet implemented.')
+        jobs = []
+        for job_json in json:
+            job_id = int(job_json['job_id'])
+            requested_queue = job_json['qr_name']
+            assigned_queue = job_json.get('queue_name', None)
+            owner = job_json['owner']
+            state = job_json['state']
+            predecessors = job_json['predecessors']
+            submit_timestamp = int(job_json['submission_timestamp'])
+            job = Job(job_id, requested_queue, assigned_queue, owner, state, predecessors, submit_timestamp)
+            jobs.append(job)
+        self.jobs = jobs
 
     def __str__(self):
         lines = [
@@ -39,5 +52,7 @@ class Cluster:
             'Nodes:'
         ]
         lines.extend([str(node) for node in self.nodes])
+        lines.append('Jobs:')
+        lines.extend([str(job) for job in self.jobs])
         return '\n'.join(lines)
 

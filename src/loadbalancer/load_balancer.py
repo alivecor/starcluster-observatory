@@ -90,7 +90,7 @@ class LoadBalancer:
             return
         cluster = Cluster.parseFromJSON(hosts_json)
         cluster.populateJobsFromJSON(jobs_json)
-        print('Cluster: ' + str(cluster))
+        print(str(cluster))
 
     def check_increase_capacity(self, hosts, pending_jobs):
         """Check if we have pending jobs, increase capacity accordingly."""
