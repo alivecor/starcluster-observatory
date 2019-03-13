@@ -40,5 +40,5 @@ class Node:
             self.name,
             'Queues:'
         ]
-        lines.extend([str(q) for q in self.job_queues])
+        lines.extend([str(q) for q in self.job_queues.values()])
         return '\n'.join(lines)
