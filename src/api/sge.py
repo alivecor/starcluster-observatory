@@ -118,9 +118,9 @@ def qstat_job_details(jid, state=None, queue_name=None):
 
 def qhost():
     """Get list of hosts in grid and status."""
-    command = '%s -xml' % QHOST_PATH
+    command = '%s -xml -q' % QHOST_PATH
     result_xml = subprocess.check_output([command], env=ENV, shell=True)
-    hosts_element = xml.etree.ElementTree.fromstring(result_xml)
+        hosts_element = xml.etree.ElementTree.fromstring(result_xml)
     hosts = []
     for host_element in hosts_element:
         if host_element.get('name') == 'global':
@@ -128,7 +128,15 @@ def qhost():
         host = {
             'name': host_element.get('name')
         }
+        queues = {}
         for host_value in host_element:
-            host[host_value.get('name')] = host_value.text
+            if host_value.tag == 'hostvalue':
+                host[host_value.get('name')] = host_value.text
+            elif host_value.tag == 'queue':
+                queue_name = host_value.name
+                queue = {}
+                for queue_value in host_value:
+                    queue[queue_value.get('name')] = queue_value.text
+                queues[queue_name] = queue
         hosts.append(host)
     return hosts
