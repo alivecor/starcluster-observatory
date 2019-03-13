@@ -91,8 +91,8 @@ class LoadBalancer:
         cluster = Cluster.parseFromJSON(hosts_json)
         cluster.populateJobsFromJSON(jobs_json)
         self.update_host_ages(cluster)
-        #print('Polled cluster:')
-        #print(str(cluster))
+        print('Polled cluster:')
+        print(str(cluster))
         for queue in config.queues:
             self.check_increase_capacity(cluster, queue)
         self.check_remove_idle(cluster)
