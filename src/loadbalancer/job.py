@@ -30,5 +30,5 @@ class Job:
 
     def __str__(self):
         submit_date = datetime.utcfromtimestamp(self.submit_timestamp).strftime('%Y-%m-%d %H:%M:%S')
-        return 'Job %d: %s on %s submitted by %s at %d' % (
+        return 'Job %d: %s on %s submitted by %s at %s' % (
             self.job_id, self.state, self.requested_queue, self.owner, submit_date)
