@@ -56,6 +56,10 @@ class Node:
         queues = [self.job_queues[qname] for qname in queue_names if qname in self.job_queues]
         return sum(q.slots - q.slots_used for q in queues)
 
+    def available_queues(self):
+        """Return set of queues that have open slots."""
+        return frozenset([j.name for j in self.job_queues if j.slots > 0])
+
     def total_slots(self, queue=None):
         """Return the number of available slots on specified queue.  If queue not specified, returns all slots."""
         queue_names = self.job_queues.keys() if queue is None else [queue]
@@ -68,7 +72,7 @@ class Node:
 
     def __str__(self):
         lines = [
-            '%s:  age: %d  load: %d' % (self.name, self.age, self.cpu_load_percent()),
+            '%s:  age: %d  load: %d%%' % (self.name, self.age, self.cpu_load_percent()),
             'Queues:'
         ]
         lines.extend([str(q) for q in self.job_queues.values()])

@@ -91,8 +91,8 @@ class LoadBalancer:
         cluster = Cluster.parseFromJSON(hosts_json)
         cluster.populateJobsFromJSON(jobs_json)
         self.update_host_ages(cluster)
-        print('Polled cluster:')
-        print(str(cluster))
+        #print('Polled cluster:')
+        #print(str(cluster))
         for queue in config.queues:
             self.check_increase_capacity(cluster, queue)
         self.check_remove_idle(cluster)
@@ -112,17 +112,20 @@ class LoadBalancer:
         # If we already have the maximum number of nodes allocated for this queue, return.
         if len(cluster.nodes_for_queue(queue.name)) >= queue.max_nodes:
             return
-        pending_jobs = cluster.pending_jobs(queue.name)
-        runnable_jobs = [j for j in pending_jobs if not j.has_predecessors()]
+        runnable_jobs = cluster.runnable_jobs(queue.name)
         if len(runnable_jobs) > 0 and cluster.available_slots(queue.name) == 0:
             print('LoadBalancer: Launching new %s in cluster %s' % (queue.default_node_type, last_node.cluster_name()), flush=True)
             self._add_host(queue.default_node_type)
 
     def check_remove_idle(self, cluster):
         """Check for idle nodes, remove them if needed."""
-        # Ensure node is idle AND there are no more pending jobs on the node's queues.
+        # Get set of queues with unscheduled jobs on them.
+        queues_with_jobs = frozenset([j.requested_queue for j in cluster.runnable_jobs()])
+        # Ensure node is idle and older than min_age_minutes.
         idle_nodes = [n for n in cluster.nodes if not n.is_master() and n.total_jobs() == 0 and n.age > (config.min_age_minutes * 60)]
-        if len(idle_nodes) > 0:
-            last_node = sorted(idle_nodes, key=lambda n: n.node_index())[-1]
+        # Ensure that there are no more runnable jobs on queues that might get scheduled on this node.
+        really_idle_nodes = [n for n in idle_nodes if len(queues_with_jobs.intersection(n.available_queues())) == 0]
+        if len(really_idle_nodes) > 0:
+            last_node = sorted(really_idle_nodes, key=lambda n: n.node_index())[-1]
             print('LoadBalancer: Removing idle node %s from cluster %s' % (last_node.name, last_node.cluster_name()), flush=True)
             self._remove_host(last_node.name)

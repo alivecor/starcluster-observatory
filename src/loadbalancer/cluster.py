@@ -51,11 +51,18 @@ class Cluster:
 
     def jobs_on_queue(self, queue):
         """Get all jobs on specified queue."""
-        return [j for j in self.jobs if j.requested_queue == queue]
+        if queue is None:
+            return self.jobs
+        else:
+            return [j for j in self.jobs if j.requested_queue == queue]
 
     def pending_jobs(self, queue):
         """Get pending jobs on specified queue"""
         return [j for j in self.jobs_on_queue(queue) if not j.running()]
+
+    def runnable_jobs(self, queue):
+        """Get all pending jobs which are ready to be scheduled"""
+        return [j for j in self.pending_jobs(queue) if not j.has_predecessors()]
 
     def available_slots(self, queue):
         """Get total number of available slots on specified queue."""
