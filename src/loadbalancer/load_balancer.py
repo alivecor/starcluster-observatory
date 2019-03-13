@@ -107,7 +107,7 @@ class LoadBalancer:
     def check_remove_idle(self, cluster):
         """Check for idle nodes, remove them if needed."""
         # Ensure node is idle AND there are no more pending jobs on the node's queues
-        idle_nodes = [n for n in self.nodes if not n.is_master() and n.total_jobs() == 0]
+        idle_nodes = [n for n in cluster.nodes if not n.is_master() and n.total_jobs() == 0]
         if len(idle_nodes) > 0:
             last_node = sorted(idle_nodes, key=lambda n: n.node_index())[-1]
             print('LoadBalancer: Removing idle node %s from cluster %s' % (last_node.name, last_node.cluster_name()), flush=True)
