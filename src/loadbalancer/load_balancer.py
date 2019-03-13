@@ -88,9 +88,9 @@ class LoadBalancer:
         jobs_json = self._qstat()
         if jobs_json is None:
             return
-        print('TODO: transform hosts and jobs into cluster datastructure')
-        print('hosts_json:\n' + str(hosts_json))
-        print('jobs_json:\n' + str(jobs_json))
+        cluster = Cluster.parseFromJSON(hosts_json)
+        cluster.populateJobsFromJSON(jobs_json)
+        print('Cluster: ' + str(cluster))
 
     def check_increase_capacity(self, hosts, pending_jobs):
         """Check if we have pending jobs, increase capacity accordingly."""
