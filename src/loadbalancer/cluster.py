@@ -30,7 +30,7 @@ class Cluster:
             nodes.append(node)
         return Cluster(cluster_name, nodes)
 
-    def populateJobsFromJSON(self):
+    def populateJobsFromJSON(self, json):
         print('warning: populateJobsFromJSON not yet implemented.')
 
     def __str__(self):
