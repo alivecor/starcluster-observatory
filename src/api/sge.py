@@ -133,7 +133,7 @@ def qhost():
             if host_value.tag == 'hostvalue':
                 host[host_value.get('name')] = host_value.text
             elif host_value.tag == 'queue':
-                queue_name = host_value.name
+                queue_name = host_value.get('name')
                 queue = {}
                 for queue_value in host_value:
                     queue[queue_value.get('name')] = queue_value.text
