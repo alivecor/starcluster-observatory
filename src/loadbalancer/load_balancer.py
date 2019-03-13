@@ -25,7 +25,8 @@ class LoadBalancer:
         schedule.every(self.polling_interval).seconds.do(self._poll)
         self.polling = False
         self.polling_thread = None
-        self._idle_hosts = {}  # Maps host name to first time (seconds) host was detected idle.
+        # Maps host name to first timestamp (seconds) host was detected.
+        self._host_launch_times = {}  # This is the only piece of information that persists between run loop evaluations.
 
     def start_polling(self):
         """Start polling queues and load balancing the cluster."""
@@ -42,7 +43,7 @@ class LoadBalancer:
         """Run loop for the background task scheduler thread."""
         while self.polling:
             schedule.run_pending()
-            time.sleep(1)
+            time.sleep(30)
 
     def _add_host(self, type):
         """Add new node of specified type to cluster."""
@@ -89,9 +90,22 @@ class LoadBalancer:
             return
         cluster = Cluster.parseFromJSON(hosts_json)
         cluster.populateJobsFromJSON(jobs_json)
+        self.update_host_ages(cluster)
+        print('Polled cluster:')
+        print(str(cluster))
         for queue in config.queues:
             self.check_increase_capacity(cluster, queue)
         self.check_remove_idle(cluster)
+
+    def update_host_ages(self, cluster):
+        """Update inferred age of hosts"""
+        host_names = [node.name for node in cluster.nodes]
+        new_launch_times = {
+            name: self._host_launch_times[name] if name in self._host_launch_times else time.time() for name in host_names
+        }
+        self._host_launch_times = new_launch_times
+        for node in cluster.nodes:
+            node.age = time.time() - new_launch_times[node.name]
 
     def check_increase_capacity(self, cluster, queue):
         """Check if we need to increase capacity for the specified queue."""
@@ -102,13 +116,13 @@ class LoadBalancer:
         runnable_jobs = [j for j in pending_jobs if not j.has_predecessors()]
         if len(runnable_jobs) > 0 and cluster.available_slots(queue.name) == 0:
             print('LoadBalancer: Launching new %s in cluster %s' % (queue.default_node_type, last_node.cluster_name()), flush=True)
-            #self._add_host(queue.default_node_type)
+            self._add_host(queue.default_node_type)
 
     def check_remove_idle(self, cluster):
         """Check for idle nodes, remove them if needed."""
-        # Ensure node is idle AND there are no more pending jobs on the node's queues
-        idle_nodes = [n for n in cluster.nodes if not n.is_master() and n.total_jobs() == 0]
+        # Ensure node is idle AND there are no more pending jobs on the node's queues.
+        idle_nodes = [n for n in cluster.nodes if not n.is_master() and n.total_jobs() == 0 and n.age > (config.min_age_minutes * 60)]
         if len(idle_nodes) > 0:
             last_node = sorted(idle_nodes, key=lambda n: n.node_index())[-1]
             print('LoadBalancer: Removing idle node %s from cluster %s' % (last_node.name, last_node.cluster_name()), flush=True)
-            #self._remove_host(last_node.name)
+            self._remove_host(last_node.name)
