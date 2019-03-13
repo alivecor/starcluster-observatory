@@ -31,9 +31,38 @@ class Node:
         else:
             return ''
 
+    def is_master(self):
+        """Return true if this is the master node."""
+        if '-' in self.name:
+            return self.name.split('-')[1] == 'master'  # By convention, master node is named clustername-master
+        else:
+            return 'master' in self.name
+
+    def node_index(self):
+        if 'node' in self.name:
+            return int(self.name.split('node')[1])
+        else:
+            return None
+
     def cpu_load_pct(self):
         """The CPU utilization % of the node."""
         return self.cpu_load_pct()
+
+    def available_slots(self, queue=None):
+        """Return the number of available slots on specified queue.  If queue not specified, returns all slots."""
+        queue_names = self.job_queues.keys() if queue is None else [queue]
+        queues = [self.job_queues[qname] for qname in queue_names if qname in self.job_queues]
+        return sum(q.slots - q.slots_used for q in queues)
+
+    def total_slots(self, queue=None):
+        """Return the number of available slots on specified queue.  If queue not specified, returns all slots."""
+        queue_names = self.job_queues.keys() if queue is None else [queue]
+        queues = [self.job_queues[qname] for qname in queue_names if qname in self.job_queues]
+        return sum(q.slots for q in queues)
+
+    def total_jobs(self):
+        """Returns total number of jobs this node is running on all queues."""
+        return sum([jq.slots_used for jq in self.job_queues.values()])
 
     def __str__(self):
         lines = [

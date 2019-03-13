@@ -4,7 +4,7 @@ import time
 from threading import Thread
 
 from cluster import Cluster
-
+import config
 
 class LoadBalancer:
     """LoadBalancer polls sge on a background thread, and starts and terminates nodes to try to match load."""
@@ -54,7 +54,6 @@ class LoadBalancer:
 
     def _remove_host(self, alias):
         """Removes host with specified alias."""
-        self.will_remove_host(alias)
         add_node_results = requests.get('http://%s:%s/nodes/%s/remove' % (
             self.api_server_host, self.api_server_port, alias))
         results_json = add_node_results.json()
@@ -90,64 +89,26 @@ class LoadBalancer:
             return
         cluster = Cluster.parseFromJSON(hosts_json)
         cluster.populateJobsFromJSON(jobs_json)
-        print(str(cluster))
+        for queue in config.queues:
+            self.check_increase_capacity(cluster, queue)
+        self.check_remove_idle(cluster)
 
-    def check_increase_capacity(self, hosts, pending_jobs):
-        """Check if we have pending jobs, increase capacity accordingly."""
-        # Filter out jobs which don't have a queue.
-        pending_jobs = [j for j in pending_jobs if 'qr_name' in j and j['qr_name'] != '']
-        # Filter out held jobs which are dependent on other jobs.
-        # TODO: check if predecessor requirements are met or not.
-        pending_jobs = [j for j in pending_jobs if len(j['predecessors']) == 0]
-        # Split cpu and gpu jobs.
-        pending_cpu_jobs = [j for j in pending_jobs if j['qr_name'] != 'gpu.q']
-        pending_gpu_jobs = [j for j in pending_jobs if j['qr_name'] == 'gpu.q']
-        #print('Pending CPU jobs: %d' % len(pending_cpu_jobs))
-        #print('Pending GPU jobs: %d' % len(pending_gpu_jobs))
-        # Give priority to GPU jobs, since that is what is most likely used for training.
-        if pending_gpu_jobs:
-            print('LoadBalancer: Launching new GPU node with %d pending jobs on gpu.q' % len(pending_gpu_jobs), flush=True)
-            self._add_host(self.gpu_type)
-        elif pending_cpu_jobs:
-            print('LoadBalancer: Launching new CPU node with %d pending cpu jobs' % len(pending_cpu_jobs), flush=True)
-            self._add_host(self.gpu_type)
+    def check_increase_capacity(self, cluster, queue):
+        """Check if we need to increase capacity for the specified queue."""
+        # If we already have the maximum number of nodes allocated for this queue, return.
+        if len(cluster.nodes_for_queue(queue.name)) >= queue.max_nodes:
+            return
+        pending_jobs = cluster.pending_jobs(queue.name)
+        runnable_jobs = [j for j in pending_jobs if not j.has_predecessors()]
+        if len(runnable_jobs) > 0 and cluster.available_slots(queue.name) == 0:
+            print('LoadBalancer: Launching new %s in cluster %s' % (queue.default_node_type, last_node.cluster_name()), flush=True)
+            #self._add_host(queue.default_node_type)
 
-    def check_remove_idle(self, hosts, queued_jobs):
-        """Check for idle nodes, remove them if confirmed idle for longer than our idle timeout."""
-        time_now = time.time()
-        idle_hosts = self._idle_hosts
-        # print('Checking for idle hosts at time %.1f.' % time_now)
-        # Check to see if any hosts are idle.
-        host_names = set([h['name'] for h in hosts if not 'master' in ['name']])
-        # Get hosts with running jobs.
-        busy_hosts = set([j['queue_name'].split('@')[1] for j in queued_jobs])
-        # Remove hosts from idle list which have taken on jobs.
-        # print('busy_hosts :' + str(busy_hosts))
-        for busy_host in busy_hosts:
-            if busy_host in idle_hosts:
-                del idle_hosts[busy_host]
-        # Add hosts with no jobs to idle list
-        idle_host_aliases = host_names.difference(busy_hosts)
-        # print('idle_host_aliases :' + str(idle_host_aliases))
-        for host in idle_host_aliases:
-            if host not in idle_hosts:
-                idle_hosts[host] = time_now
-        # Remove hosts from idle list that have been removed from SGE.
-        for host in idle_hosts:
-            if host not in idle_host_aliases:
-                del idle_hosts[host]
-        # Check if any hosts have been idle longer than idle_timeout.
-        hosts_to_remove = []
-        idle_times = []
-        for host, start_time in idle_hosts.items():
-            if (time_now - start_time) > self.idle_timeout:
-                hosts_to_remove.append(host)
-                idle_times.append(time_now - start_time)
-        if hosts_to_remove:
-            # Remove the oldest idle node first.
-            index = np.argmax(idle_times)
-            alias = hosts_to_remove[index]
-            idle_time = idle_times[index]
-            # Remove one host
-            print('LoadBalancer: Removing node %s which was idle for %.1f minutes' % (alias, idle_time), flush=True)
-            self._remove_host(alias)
+    def check_remove_idle(self, cluster):
+        """Check for idle nodes, remove them if needed."""
+        # Ensure node is idle AND there are no more pending jobs on the node's queues
+        idle_nodes = [n for n in self.nodes if not n.is_master() and n.total_jobs() == 0]
+        if len(idle_nodes) > 0:
+            last_node = sorted(idle_nodes, key=lambda n: n.node_index())[-1]
+            print('LoadBalancer: Removing idle node %s from cluster %s' % (last_node.name, last_node.cluster_name()), flush=True)
+            #self._remove_host(last_node.name)

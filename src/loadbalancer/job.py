@@ -28,6 +28,10 @@ class Job:
         """Is this job running or not."""
         return self.assigned_queue is not None
 
+    def has_predecessors(self):
+        """Does this job depend on other jobs?"""
+        return self.predecessors is not None and len(self.predecessors) > 0
+
     def __str__(self):
         submit_date = datetime.utcfromtimestamp(self.submit_timestamp).strftime('%Y-%m-%d %H:%M:%S')
         return 'Job %d: %s on %s submitted by %s at %s' % (

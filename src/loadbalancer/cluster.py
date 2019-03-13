@@ -46,6 +46,21 @@ class Cluster:
             jobs.append(job)
         self.jobs = jobs
 
+    def nodes_for_queue(self, queue):
+        return [n for n in self.nodes if n.total_slots(queue) > 0 and not n.is_master()]
+
+    def jobs_on_queue(self, queue):
+        """Get all jobs on specified queue."""
+        return [j for j in self.jobs if j.requested_queue == queue]
+
+    def pending_jobs(self, queue):
+        """Get pending jobs on specified queue"""
+        return [j for j in self.jobs_on_queue(queue) if not j.running()]
+
+    def available_slots(self, queue):
+        """Get total number of available slots on specified queue."""
+        return sum(n.available_slots(queue) for n in self.nodes)
+
     def __str__(self):
         lines = [
             'Cluster %s' % self.name,

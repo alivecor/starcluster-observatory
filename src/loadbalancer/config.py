@@ -10,4 +10,3 @@ queues = [
 
 # Don't terminate a node if it is younger than this number of minutes
 min_age_minutes = 30
-
