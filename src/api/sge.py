@@ -120,7 +120,7 @@ def qhost():
     """Get list of hosts in grid and status."""
     command = '%s -xml -q' % QHOST_PATH
     result_xml = subprocess.check_output([command], env=ENV, shell=True)
-        hosts_element = xml.etree.ElementTree.fromstring(result_xml)
+    hosts_element = xml.etree.ElementTree.fromstring(result_xml)
     hosts = []
     for host_element in hosts_element:
         if host_element.get('name') == 'global':
@@ -138,5 +138,6 @@ def qhost():
                 for queue_value in host_value:
                     queue[queue_value.get('name')] = queue_value.text
                 queues[queue_name] = queue
+        host['queues'] = queues
         hosts.append(host)
     return hosts
