@@ -80,7 +80,15 @@ class LoadBalancer:
         return jobs_json
 
     def _poll(self):
-        """Internal method called periodically to poll the cluster state."""
+        """Internal method called periodically on background thread to poll the cluster state."""
+        try:
+            self.poll()
+        except Exception as e:
+            print('LoadBalancer: polling failed with exception')
+            print(str(e))
+
+    def poll(self):
+        """Poll the cluster state"""
         # Get list of hosts results from server.
         hosts_json = self._qhost()
         if hosts_json is None:
@@ -91,8 +99,8 @@ class LoadBalancer:
         cluster = Cluster.parseFromJSON(hosts_json)
         cluster.populateJobsFromJSON(jobs_json)
         self.update_host_ages(cluster)
-        print('Polled cluster:')
-        print(str(cluster))
+        #print('Polled cluster:')
+        #print(str(cluster))
         for queue in config.queues:
             self.check_increase_capacity(cluster, queue)
         self.check_remove_idle(cluster)

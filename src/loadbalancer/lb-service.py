@@ -21,7 +21,7 @@ lb = load_balancer.LoadBalancer(args.api_server_host,
 if __name__ == '__main__':
     if args.polling_interval == 0:
         print('Load balancer polling once:')
-        lb._poll()
+        lb.poll()
     else:
         print('Load balancer starting polling', flush=True)
         lb.start_polling()
