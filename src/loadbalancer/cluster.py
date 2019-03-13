@@ -16,9 +16,9 @@ class Cluster:
         cluster_name = ''
         nodes = []
         for host_json in json:
-            name = host['name']
-            load = float(host['load_avg'])
-            queues = host['queues']
+            name = host_json['name']
+            load = float(host_json['load_avg'])
+            queues = host_json['queues']
             job_queues = {}
             for qname, queue_json in queues.items():
                 slots = int(queue_json['slots'])
