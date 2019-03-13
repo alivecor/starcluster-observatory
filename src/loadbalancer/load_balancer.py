@@ -114,7 +114,7 @@ class LoadBalancer:
             return
         runnable_jobs = cluster.runnable_jobs(queue.name)
         if len(runnable_jobs) > 0 and cluster.available_slots(queue.name) == 0:
-            print('LoadBalancer: Launching new %s in cluster %s' % (queue.default_node_type, last_node.cluster_name()), flush=True)
+            print('LoadBalancer: Launching new %s in cluster %s' % (queue.default_node_type, cluster.name), flush=True)
             self._add_host(queue.default_node_type)
 
     def check_remove_idle(self, cluster):
