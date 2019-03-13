@@ -77,4 +77,3 @@ class Cluster:
         lines.append('Jobs:')
         lines.extend([str(job) for job in self.jobs])
         return '\n'.join(lines)
-

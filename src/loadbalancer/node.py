@@ -41,6 +41,7 @@ class Node:
             return 'master' in self.name
 
     def node_index(self):
+        """The index of this node.  i.e. 1 for node-001, 2 for node002"""
         if 'node' in self.name:
             return int(self.name.split('node')[1])
         else:
