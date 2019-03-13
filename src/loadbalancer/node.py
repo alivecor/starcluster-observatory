@@ -58,7 +58,7 @@ class Node:
 
     def available_queues(self):
         """Return set of queues that have open slots."""
-        return frozenset([j.name for j in self.job_queues if j.slots > 0])
+        return frozenset([j.name for j in self.job_queues.values() if j.slots > 0])
 
     def total_slots(self, queue=None):
         """Return the number of available slots on specified queue.  If queue not specified, returns all slots."""
