@@ -35,6 +35,10 @@ ondemand_instance_cost = {
     'g3.4xlarge':  1.14,
     'g3.8xlarge':  2.28,
     'g3.16xlarge': 4.56,
+    'g5.12xlarge': 5.67,
+    'g5.24xlarge': 8.14,
+    'g5.48xlarge': 16.28,
+    
     # Memory Optimized
     'x1.16xlarge': 6.669,
     'x1.32xlarge': 13.338,
@@ -78,6 +82,9 @@ instance_types = {
     'g3.4xlarge': GPU,
     'g3.8xlarge': GPU,
     'g3.16xlarge': GPU,
+    'g5.12xlarge': GPU,
+    'g5.24xlarge': GPU,
+    'g5.48xlarge': GPU,    
     # Memory Optimized
     'm4.16xlarge': MEMORY,
     'x1.16xlarge': MEMORY,
